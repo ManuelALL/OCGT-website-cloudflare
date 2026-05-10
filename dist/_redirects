@@ -1,0 +1,4 @@
+# www → apex
+https://www.ocgt.de/*  https://ocgt.de/:splat  301
+# SPA fallback for unknown routes
+/*  /index.html  200
