@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Icon library preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+<style>
+  :root {
+    --bg: #F4F1EA;
+    --card: #FFFFFF;
+    --text: #14161A;
+    --muted: #5A5750;
+    --b: rgba(0,0,0,.1);
+    --mint: #22C65F;
+    --f: 'Geist', system-ui, sans-serif;
+    --m: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body {
+    font-family: var(--f);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+  h1 {
+    font-size: 1.7rem; font-weight: 700; letter-spacing: -.01em;
+    margin: 0 0 .4rem;
+  }
+  .sub {
+    font-family: var(--m); font-size: .72rem; letter-spacing:.12em; text-transform:uppercase;
+    color: var(--muted); margin: 0 0 2.5rem;
+  }
+  .lib {
+    margin-bottom: 1.6rem;
+    background: var(--card);
+    border: 1px solid var(--b);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem 1.3rem;
+  }
+  .lib h2 {
+    font-size: 1rem; font-weight: 700; margin: 0 0 .15rem;
+    display: flex; align-items: baseline; gap: .7rem;
+  }
+  .lib h2 .meta {
+    font-family: var(--m); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500;
+  }
+  .lib .row {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: .55rem;
+    margin-top: .9rem;
+  }
+  .lib .row > div {
+    aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+    background: #F4F1EA;
+    border-radius: 8px;
+  }
+  .lib iconify-icon {
+    font-size: 22px;
+    color: var(--text);
+  }
+  @media (max-width: 720px) {
+    .lib .row { grid-template-columns: repeat(5, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <h1>Icon library preview</h1>
+  <p class="sub">10 icons per library · same use cases · stroke-based</p>
+
+  <div class="lib">
+    <h2>Lucide <span class="meta">stroke 2 · 24×24 · MIT</span></h2>
+    <div class="row">
+      <div><iconify-icon icon="lucide:arrow-right"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:search"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:eye"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:calendar"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:mail"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:file-text"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:shield"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:settings"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:droplet"></iconify-icon></div>
+      <div><iconify-icon icon="lucide:map-pin"></iconify-icon></div>
+    </div>
+  </div>
+
+  <div class="lib">
+    <h2>Tabler <span class="meta">stroke 2 · 24×24 · MIT</span></h2>
+    <div class="row">
+      <div><iconify-icon icon="tabler:arrow-right"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:search"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:eye"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:calendar"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:mail"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:file-text"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:shield"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:settings"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:droplet"></iconify-icon></div>
+      <div><iconify-icon icon="tabler:map-pin"></iconify-icon></div>
+    </div>
+  </div>
+
+  <div class="lib">
+    <h2>Heroicons <span class="meta">stroke 1.5 · 24×24 · MIT</span></h2>
+    <div class="row">
+      <div><iconify-icon icon="heroicons:arrow-right"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:magnifying-glass"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:eye"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:calendar"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:envelope"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:document-text"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:shield-check"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:cog-6-tooth"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:beaker"></iconify-icon></div>
+      <div><iconify-icon icon="heroicons:map-pin"></iconify-icon></div>
+    </div>
+  </div>
+
+  <div class="lib">
+    <h2>Phosphor <span class="meta">multi-weight · 256 grid · MIT</span></h2>
+    <div class="row">
+      <div><iconify-icon icon="ph:arrow-right"></iconify-icon></div>
+      <div><iconify-icon icon="ph:magnifying-glass"></iconify-icon></div>
+      <div><iconify-icon icon="ph:eye"></iconify-icon></div>
+      <div><iconify-icon icon="ph:calendar"></iconify-icon></div>
+      <div><iconify-icon icon="ph:envelope"></iconify-icon></div>
+      <div><iconify-icon icon="ph:file-text"></iconify-icon></div>
+      <div><iconify-icon icon="ph:shield"></iconify-icon></div>
+      <div><iconify-icon icon="ph:gear"></iconify-icon></div>
+      <div><iconify-icon icon="ph:drop"></iconify-icon></div>
+      <div><iconify-icon icon="ph:map-pin"></iconify-icon></div>
+    </div>
+  </div>
+
+  <div class="lib">
+    <h2>Iconoir <span class="meta">stroke 1.5 · 24×24 · MIT</span></h2>
+    <div class="row">
+      <div><iconify-icon icon="iconoir:arrow-right"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:search"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:eye-alt"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:calendar"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:mail"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:page"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:shield"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:settings"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:droplet"></iconify-icon></div>
+      <div><iconify-icon icon="iconoir:pin-alt"></iconify-icon></div>
+    </div>
+  </div>
+
+  <div class="lib">
+    <h2>Feather <span class="meta">stroke 2 · 24×24 · MIT</span></h2>
+    <div class="row">
+      <div><iconify-icon icon="feather:arrow-right"></iconify-icon></div>
+      <div><iconify-icon icon="feather:search"></iconify-icon></div>
+      <div><iconify-icon icon="feather:eye"></iconify-icon></div>
+      <div><iconify-icon icon="feather:calendar"></iconify-icon></div>
+      <div><iconify-icon icon="feather:mail"></iconify-icon></div>
+      <div><iconify-icon icon="feather:file-text"></iconify-icon></div>
+      <div><iconify-icon icon="feather:shield"></iconify-icon></div>
+      <div><iconify-icon icon="feather:settings"></iconify-icon></div>
+      <div><iconify-icon icon="feather:droplet"></iconify-icon></div>
+      <div><iconify-icon icon="feather:map-pin"></iconify-icon></div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

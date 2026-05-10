@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OCGT — Senior CTA Color Direction</title>
+<style>
+  html,body { margin:0; padding:0; font-family: 'Inter', system-ui, -apple-system, sans-serif; background:#0E1014; color:#F4EFE6; }
+  .wrap { max-width:1320px; margin:0 auto; padding:3.5rem 2rem 6rem; }
+  h1 { font-size:1.85rem; margin:0 0 .35rem; font-weight:700; letter-spacing:-.025em; }
+  .lead { color:#9aa1ab; margin:0 0 .35rem; max-width:72ch; line-height:1.55; font-size:.95rem; }
+  .lead-sub { color:#6b7280; margin:0 0 2.5rem; font-size:.82rem; }
+
+  .tier { margin:2.5rem 0 1rem; }
+  .tier-tag { display:inline-flex; align-items:center; gap:.6rem; padding:.4rem .85rem; border-radius:999px; background:rgba(77,206,175,.10); border:1px solid rgba(77,206,175,.25); color:#4DCEAF; font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; font-weight:700; font-family:ui-monospace, 'SFMono-Regular', monospace; }
+  .tier-h { margin:.7rem 0 .25rem; font-size:1.15rem; font-weight:700; letter-spacing:-.015em; }
+  .tier-sub { margin:0 0 1.2rem; color:#9aa1ab; font-size:.85rem; max-width:72ch; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(420px, 1fr)); gap:1.4rem; }
+
+  .card { border-radius:18px; overflow:hidden; background:#1A1B1F; border:1px solid rgba(255,255,255,.07); transition:transform .3s ease, border-color .3s ease, box-shadow .3s; }
+  .card:hover { transform:translateY(-4px); border-color:rgba(255,255,255,.22); box-shadow:0 24px 60px rgba(0,0,0,.35); }
+  .card.recommended { border-color:rgba(232,147,10,.4); box-shadow:0 0 0 1px rgba(232,147,10,.2), 0 18px 40px rgba(0,0,0,.3); }
+  .card.top { border-color:rgba(77,206,175,.5); box-shadow:0 0 0 1px rgba(77,206,175,.25), 0 18px 40px rgba(0,0,0,.3); }
+
+  .stage-dark {
+    height:200px;
+    background:
+      linear-gradient(180deg, rgba(14,16,20,.45) 0%, rgba(14,16,20,.78) 100%),
+      url('Images/DSO_A3 oRand.jpg') center 35%/cover;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .stage-light {
+    height:130px; background:#F4F1EA;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .stage-cream-h {
+    position:absolute; bottom:.55rem; right:.85rem;
+    font-family:ui-monospace, 'SFMono-Regular', monospace; font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:#9aa1ab; opacity:.7;
+  }
+  .stage-dark-h { position:absolute; bottom:.55rem; right:.85rem; font-family:ui-monospace,monospace; font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:#fff; opacity:.55; }
+
+  .info { padding:1.25rem 1.35rem 1.4rem; }
+  .name-row { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:.45rem; }
+  .name { font-size:1.05rem; font-weight:700; letter-spacing:-.012em; margin:0; }
+  .badge { font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; font-weight:700; padding:3px 8px; border-radius:6px; white-space:nowrap; }
+  .badge.b-top { background:rgba(77,206,175,.15); color:#4DCEAF; }
+  .badge.b-rec { background:rgba(232,147,10,.18); color:#FFB958; }
+  .badge.b-bold { background:rgba(251,113,133,.15); color:#FB7185; }
+  .swatch-row { display:flex; align-items:center; gap:.6rem; font-family: ui-monospace, 'SFMono-Regular', monospace; font-size:.78rem; color:#9aa1ab; margin:0 0 .7rem; }
+  .swatch { width:14px; height:14px; border-radius:4px; border:1px solid rgba(255,255,255,.15); display:inline-block; }
+  .ref { color:#6b7280; font-size:.74rem; margin:0 0 .5rem; font-family:ui-monospace, 'SFMono-Regular', monospace; letter-spacing:.05em; }
+  .vibe { margin:0; color:#cbd1da; font-size:.86rem; line-height:1.6; }
+
+  /* Button mirrors .btn-p exactly — same shape, same font, same shimmer */
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    font-weight:700; font-size:1rem; letter-spacing:.005em;
+    padding:1rem 2.25rem; border-radius:12px; border:none;
+    transition:transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, filter .25s;
+    position:relative; overflow:hidden; cursor:pointer;
+  }
+  .btn:hover { transform:translateY(-2px); filter:brightness(1.07); }
+
+  /* ── Tier 1 — Editorial Tech (Apple / Linear / Vercel) ── */
+  .btn[data-c="ink"]      { background:#0E1014; color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.10), 0 6px 22px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.10); }
+  .btn[data-c="charcoal"] { background:#1C1F26; color:#fff; box-shadow:0 0 0 1px rgba(255,255,255,.12), 0 6px 22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.10); }
+  .btn[data-c="snow"]     { background:#FFFFFF; color:#0A1A14; box-shadow:0 0 0 1px rgba(15,17,21,.10), 0 6px 22px rgba(15,17,21,.18), inset 0 1px 0 rgba(255,255,255,.7); }
+
+  /* ── Tier 2 — Heritage Engineering Palette ── */
+  .btn[data-c="petrol"]   { background:#0F4C5C; color:#fff; box-shadow:0 0 0 1px rgba(15,76,92,.55), 0 6px 22px rgba(15,76,92,.4), inset 0 1px 0 rgba(255,255,255,.14); }
+  .btn[data-c="forest"]   { background:#1F4E47; color:#fff; box-shadow:0 0 0 1px rgba(31,78,71,.55), 0 6px 22px rgba(31,78,71,.4), inset 0 1px 0 rgba(255,255,255,.14); }
+  .btn[data-c="signal"]   { background:#1E3A8A; color:#fff; box-shadow:0 0 0 1px rgba(30,58,138,.5), 0 6px 22px rgba(30,58,138,.4), inset 0 1px 0 rgba(255,255,255,.14); }
+
+  /* ── Tier 3 — Industrial / Premium Heritage ── */
+  .btn[data-c="amber"]    { background:#E8930A; color:#1A0F00; box-shadow:0 0 0 1px rgba(232,147,10,.5), 0 6px 22px rgba(232,147,10,.35), inset 0 1px 0 rgba(255,255,255,.30); text-shadow:0 1px 0 rgba(255,255,255,.18); }
+  .btn[data-c="bauer"]    { background:#FAB000; color:#1A1300; box-shadow:0 0 0 1px rgba(250,176,0,.5), 0 6px 22px rgba(250,176,0,.35), inset 0 1px 0 rgba(255,255,255,.32); text-shadow:0 1px 0 rgba(255,255,255,.18); }
+  .btn[data-c="copper"]   { background:#B45309; color:#fff; box-shadow:0 0 0 1px rgba(180,83,9,.5), 0 6px 22px rgba(180,83,9,.4), inset 0 1px 0 rgba(255,255,255,.18); }
+
+  /* ── Tier 4 — Differentiating / Architectural ── */
+  .btn[data-c="sand"]     { background:#B89B6B; color:#1A1300; box-shadow:0 0 0 1px rgba(184,155,107,.55), 0 6px 22px rgba(184,155,107,.35), inset 0 1px 0 rgba(255,255,255,.28); }
+  .btn[data-c="olive"]    { background:#5C6438; color:#fff; box-shadow:0 0 0 1px rgba(92,100,56,.5), 0 6px 22px rgba(92,100,56,.4), inset 0 1px 0 rgba(255,255,255,.14); }
+  .btn[data-c="slate"]    { background:#475569; color:#fff; box-shadow:0 0 0 1px rgba(71,85,105,.5), 0 6px 22px rgba(71,85,105,.4), inset 0 1px 0 rgba(255,255,255,.16); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Senior CTA Direction — Curated</h1>
+    <p class="lead">Stripped down to the colors that actually fit OCGT — a premium Berlin engineering brand sitting between Spezialtiefbau heritage and modern Reality Capture tech. Every option below is benchmarked against real reference brands. The mint <code style="background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px;">#5DEF95</code> reads as a generic SaaS-startup color and competes with your photography for attention. We can do better.</p>
+    <p class="lead-sub">Each card shows the button on your actual hero photo (top) and the cream body (bottom).</p>
+
+    <!-- ═══════════════ TIER 1 ═══════════════ -->
+    <div class="tier">
+      <span class="tier-tag">Tier 01 · Editorial Tech</span>
+      <h2 class="tier-h">The "let the work speak" approach</h2>
+      <p class="tier-sub">What Apple, Linear, Vercel, Stripe, and the best architecture studios use. The CTA disappears as a color and reappears as a confident shape. Your construction photography, your teal accents, and your typography do the talking.</p>
+      <div class="grid">
+
+        <div class="card top">
+          <div class="stage-dark"><button class="btn" data-c="ink">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="ink">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Ink Black</h3><span class="badge b-top">Top pick</span></div>
+            <div class="swatch-row"><span class="swatch" style="background:#0E1014"></span> #0E1014</div>
+            <p class="ref">Reference: Apple · Linear · Vercel · Snøhetta</p>
+            <p class="vibe">The single most professional CTA color. Frames your construction photography like a gallery print. Lets your existing teal accent (`#2A9D8F`) own the brand identity instead of competing with the CTA. Highest contrast on cream, sophisticated on dark. Timeless.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="charcoal">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="charcoal">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Soft Charcoal</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#1C1F26"></span> #1C1F26</div>
+            <p class="ref">Reference: Stripe · GitHub · Notion</p>
+            <p class="vibe">Same idea as Ink, slightly softer. Less clinical. If pure black feels too sharp against your warm cream body, this is the move.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="snow">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="snow">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Glacier White</h3><span class="badge b-bold">Bold</span></div>
+            <div class="swatch-row"><span class="swatch" style="background:#fff;border-color:#444"></span> #FFFFFF</div>
+            <p class="ref">Reference: Bjarke Ingels Group · Tesla · COS</p>
+            <p class="vibe">The inverted move — bright on dark photos, hollow on cream. Maximum elegance, minimum noise. Needs a dark-text variant on light backgrounds (which I'd handle automatically).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ TIER 2 ═══════════════ -->
+    <div class="tier">
+      <span class="tier-tag">Tier 02 · Engineering Heritage</span>
+      <h2 class="tier-h">"We've been here for decades" colors</h2>
+      <p class="tier-sub">Deep, sophisticated tones that evoke German DIN-standard precision and decades of engineering trust. Industrial, but premium-industrial — not budget-industrial.</p>
+      <div class="grid">
+
+        <div class="card top">
+          <div class="stage-dark"><button class="btn" data-c="petrol">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="petrol">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Deep Petrol</h3><span class="badge b-top">Top pick</span></div>
+            <div class="swatch-row"><span class="swatch" style="background:#0F4C5C"></span> #0F4C5C</div>
+            <p class="ref">Reference: Hexagon · Bentley · Trimble</p>
+            <p class="vibe">A darker cousin of your existing teal accent — instant family resemblance, but heavyweight. Reads as serious B2B engineering software. Best "ties everything together" choice.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="forest">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="forest">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Conifer Green</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#1F4E47"></span> #1F4E47</div>
+            <p class="ref">Reference: Patagonia · Aesop · Snøhetta</p>
+            <p class="vibe">Deep evergreen, very Berlin-architecture-firm. Subtly nods to "Geo­technik" without being on-the-nose. Pairs with cream like aged brass on linen.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="signal">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="signal">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">DIN Signal Blue</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#1E3A8A"></span> #1E3A8A</div>
+            <p class="ref">Reference: Siemens · IBM · Boeing</p>
+            <p class="vibe">Ultra-trustworthy engineering blue. Conservative. Will please your most senior B2B client. Slightly less ownable than the others — every engineering firm uses some shade of this.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ TIER 3 ═══════════════ -->
+    <div class="tier">
+      <span class="tier-tag">Tier 03 · Industrial Warmth</span>
+      <h2 class="tier-h">German Bau-industry signal</h2>
+      <p class="tier-sub">Direct callouts to the warm yellow/amber palette of construction giants like Bauer, Liebherr, Wirtgen. Pairs perfectly with the teal accent via complementary contrast — this is how you make the CTA *unmissable* without being garish.</p>
+      <div class="grid">
+
+        <div class="card recommended">
+          <div class="stage-dark"><button class="btn" data-c="amber">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="amber">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Construction Amber</h3><span class="badge b-rec">Recommended</span></div>
+            <div class="swatch-row"><span class="swatch" style="background:#E8930A"></span> #E8930A</div>
+            <p class="ref">Reference: Strabag · Hochtief · DHL</p>
+            <p class="vibe">Premium amber — warmer than corporate orange, less neon than safety yellow. Complementary to your teal accent: when both are visible, the eye snaps to the orange CTA first. This is how Strabag's brand gets noticed across construction sites.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="bauer">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="bauer">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Bauer Yellow</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#FAB000"></span> #FAB000</div>
+            <p class="ref">Reference: Bauer Group · Liebherr · Wirtgen</p>
+            <p class="vibe">The exact yellow on the Bauer cranes in your own hero photo. Bold, ownable, immediately reads "Spezialtiefbau". The most "we know our industry" choice.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="copper">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="copper">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Burnt Copper</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#B45309"></span> #B45309</div>
+            <p class="ref">Reference: Aesop · Hermès · Atelier Bow-Wow</p>
+            <p class="vibe">A more sophisticated, Berlin-Mitte-gallery-opening cousin of orange. Less PPE-jacket, more "boutique architecture firm". Premium and warm.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ TIER 4 ═══════════════ -->
+    <div class="tier">
+      <span class="tier-tag">Tier 04 · Distinctive · Differentiator</span>
+      <h2 class="tier-h">"No one else in your space uses this"</h2>
+      <p class="tier-sub">Bolder territory — colors that make OCGT visually distinctive against every competitor. Higher risk, higher reward.</p>
+      <div class="grid">
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="sand">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="sand">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Champagne Sand</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#B89B6B"></span> #B89B6B</div>
+            <p class="ref">Reference: Aesop · Norm Architects · COS</p>
+            <p class="vibe">The "premium Berlin atelier" move. Pairs with your cream body like fine craftsmanship. Surprising for an engineering brand — would set OCGT apart instantly.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="olive">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="olive">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Workshop Olive</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#5C6438"></span> #5C6438</div>
+            <p class="ref">Reference: Filson · Carhartt WIP · Tom Dixon</p>
+            <p class="vibe">Earthy, industrial, German workshop vibe. Subtly references the "geo" in Geotechnik. Best paired if you also lean the brand into a more workmanlike, hands-on visual identity.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stage-dark"><button class="btn" data-c="slate">Bauüberwachung anfragen →</button><span class="stage-dark-h">on Bauer hero</span></div>
+          <div class="stage-light"><button class="btn" data-c="slate">Bauüberwachung anfragen →</button><span class="stage-cream-h">on body</span></div>
+          <div class="info">
+            <div class="name-row"><h3 class="name">Quiet Slate</h3></div>
+            <div class="swatch-row"><span class="swatch" style="background:#475569"></span> #475569</div>
+            <p class="ref">Reference: Arc'teryx · MUJI · OFF-WHITE</p>
+            <p class="vibe">Quiet luxury. The CTA recedes, the rest of the design carries the energy. Best if you want maximum minimalism.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:4rem; padding:1.5rem 1.75rem; border-radius:14px; background:rgba(77,206,175,.07); border:1px solid rgba(77,206,175,.18); max-width:78ch;">
+      <p style="margin:0 0 .75rem; font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:#4DCEAF; font-weight:700;">Senior recommendation</p>
+      <p style="margin:0 0 .75rem; font-size:1rem; line-height:1.6; color:#F4EFE6;">For OCGT specifically, my one-line answer:</p>
+      <p style="margin:0; font-size:.95rem; line-height:1.7; color:#cbd1da;"><b style="color:#F4EFE6;">Ink Black `#0E1014`</b> for the safest, most timeless, "every premium site uses this" pick — your teal accent then carries the brand identity unchallenged. Or, if you want OCGT to actually <i>own</i> a color in the geotechnik space, <b style="color:#FFB958;">Construction Amber `#E8930A`</b> — complementary to your teal, signals "Bau" instantly, and no Berlin geotechnik competitor uses it.</p>
+    </div>
+  </div>
+</body>
+</html>

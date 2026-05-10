@@ -1,0 +1,70 @@
+name: Build & verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run prerender
+        run: python3 build-prerender.py
+
+      - name: Validate HTML
+        run: npx -y html-validate "dist/**/*.html" || true
+
+      - name: Check for broken links
+        run: npx -y linkinator dist --silent --skip "https?://" || true
+
+      - name: Verify all 20 routes exist
+        run: |
+          set -e
+          for slug in "" geotechnik bauueberwachung vergabe grundwasser beratung \
+                     reality-capture 3d-vermessung baustellendokumentation inspektionen \
+                     digitale-zwillinge thermografie multispektral video-film technologie \
+                     ueber-uns referenzen kontakt impressum datenschutz; do
+            f="dist/${slug:+$slug/}index.html"
+            test -f "$f" || (echo "MISSING: $f" && exit 1)
+          done
+          echo "All 20 prerendered routes present."
+
+      - name: Verify Cloudflare deploy files
+        run: |
+          test -f dist/_headers              || (echo "MISSING dist/_headers"              && exit 1)
+          test -f dist/_redirects            || (echo "MISSING dist/_redirects"            && exit 1)
+          test -f dist/sw.js                 || (echo "MISSING dist/sw.js"                 && exit 1)
+          test -d dist/functions             || (echo "MISSING dist/functions/"            && exit 1)
+          test -f dist/assets/site.css       || (echo "MISSING dist/assets/site.css"       && exit 1)
+          test -f dist/assets/site.js        || (echo "MISSING dist/assets/site.js"        && exit 1)
+          echo "Cloudflare files + extracted assets present."
+
+      - name: Verify HTML uses external assets (no inline <style>)
+        run: |
+          inline=$(grep -lc '<style' dist/*.html dist/*/index.html 2>/dev/null | grep -v ':0$' || true)
+          if [ -n "$inline" ]; then
+            echo "FAIL: inline <style> still present in:"
+            echo "$inline"
+            exit 1
+          fi
+          missing=$(grep -L 'href="/assets/site.css"' dist/index.html dist/*/index.html || true)
+          if [ -n "$missing" ]; then
+            echo "FAIL: missing site.css link in:"
+            echo "$missing"
+            exit 1
+          fi
+          echo "All routes use external /assets/site.css and /assets/site.js."
