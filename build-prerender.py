@@ -507,21 +507,15 @@ def main():
         (out_path / '_headers').write_text(headers_txt, encoding='utf-8')
         print('  ✓ _headers (Cloudflare Pages)')
 
-        # _redirects — SPA fallback (only fires when no prerendered file matches)
-        redirects_txt = (
-            "# www → apex\n"
-            "https://www.ocgt.de/*  https://ocgt.de/:splat  301\n"
-            "# SPA fallback for unknown routes\n"
-            "/*  /index.html  200\n"
-        )
-        (out_path / '_redirects').write_text(redirects_txt, encoding='utf-8')
-        print('  ✓ _redirects (Cloudflare Pages)')
+        # _redirects — not used on Workers Static Assets:
+        #   • SPA fallback is handled by `not_found_handling = "single-page-application"` in wrangler.toml
+        #   • www → apex must be done via Cloudflare Redirect Rules (Workers _redirects rejects absolute URLs)
+        # Remove any stale file from a previous Pages build.
+        stale_redirects = out_path / '_redirects'
+        if stale_redirects.exists():
+            stale_redirects.unlink()
 
-        # Copy Pages Functions (functions/api/contact.js → dist/functions/...)
-        fn_src = root / 'functions'
-        if fn_src.exists():
-            shutil.copytree(fn_src, out_path / 'functions', dirs_exist_ok=True)
-            print('  ✓ functions/ (Cloudflare Pages Functions)')
+        # functions/ is no longer copied — the Worker (worker/index.js) handles /api/contact.
 
         # Wire the form to the Pages Function endpoint (source HTML untouched)
         for html_file in out_path.rglob('*.html'):
