@@ -517,6 +517,13 @@ def main():
         # registration) and many inline style="..." attributes. Using nonces
         # would be stricter but requires per-request rendering, which this
         # static-prerendered site doesn't do.
+        # Whitelist the R2 host for images and video. The wildcard r2.dev
+        # entry future-proofs token rotation; the explicit R2_BASE_URL is
+        # included for precision when a custom domain is configured.
+        cdn_hosts = "https://*.r2.dev"
+        if R2_BASE_URL and R2_BASE_URL not in ('https://pub-.r2.dev', ''):
+            cdn_hosts = f"{R2_BASE_URL} https://*.r2.dev"
+
         csp = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' "
@@ -527,12 +534,14 @@ def main():
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net; "
             "font-src 'self' data: https://fonts.bunny.net; "
             "img-src 'self' data: blob: "
+                f"{cdn_hosts} "
                 "https://i.ytimg.com "
                 "https://*.ytimg.com "
                 "https://*.cloudflare.com; "
-            "media-src 'self' blob:; "
+            f"media-src 'self' blob: {cdn_hosts}; "
             "frame-src 'self' "
                 "https://challenges.cloudflare.com "
+                "https://cloud.pix4d.com "
                 "https://www.youtube.com "
                 "https://www.youtube-nocookie.com; "
             "connect-src 'self' "
