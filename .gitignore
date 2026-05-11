@@ -199,3 +199,19 @@ three.min.js
 #   04 Videos/hero-poster.jpg
 #   04 Videos/hero-poster-1600.jpg
 # ══════════════════════════════════════════════════════════════
+
+# ─── Media — hosted on R2, not in git ─────────────────────────────────
+Images/
+Videos/
+04 Videos/
+marketing/
+logos/
+icons/
+company_logos/
+
+# ─── Local backups + build artifacts ─────────────────────────────────
+_media_backups/
+*.bak
+*.original.mp4
+optimize.log
+optimize-videos.log

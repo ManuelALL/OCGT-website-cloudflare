@@ -27,6 +27,15 @@ import sys
 from pathlib import Path
 
 # ── Source-of-truth route map. Mirror of ROUTES in OCGT_website.html. ──
+# ── R2 / CDN config ────────────────────────────────────────────────────
+# R2_BASE_URL is read from the environment (set in Cloudflare Pages/Workers
+# dashboard → Variables and Secrets) so you can change the CDN host without
+# touching code. Local builds fall back to the hardcoded default.
+# Set R2_BASE_URL='' to bundle media into dist/ instead of rewriting to R2.
+R2_BASE_URL   = os.environ.get('R2_BASE_URL', 'https://assets.ocgt.de').rstrip('/')
+USE_R2        = bool(R2_BASE_URL)
+R2_DIRS       = ['Images', 'logos', 'icons', 'company_logos', 'marketing', 'Videos']
+
 ROUTES = {
     '':                        'home',
     'geotechnik':              'geotechnik',
@@ -230,7 +239,7 @@ def main():
     js_text  = '\n\n/* ── boundary ── */\n\n'.join(j.strip() for j in js_chunks)
     # CSS lives at /assets/site.css — rewrite relative url(Images/...) refs
     # to absolute /Images/... so they resolve correctly from any route.
-    _ASSET_DIRS_CSS = ['Images', 'logos', 'icons', 'company_logos', 'marketing', '04 Videos']
+    _ASSET_DIRS_CSS = ['Images', 'logos', 'icons', 'company_logos', 'marketing', 'Videos']
     for d in _ASSET_DIRS_CSS:
         css_text = re.sub(
             rf'(url\(["\']?)({re.escape(d)}/)',
@@ -285,7 +294,7 @@ def main():
     # deep routes like /kontakt/ where they resolve to /kontakt/Images/foo.png
     # → SPA fallback serves index.html → browser tries to render HTML as
     # an image and fails. Rewrite each known asset folder to be absolute.
-    ASSET_DIRS = ['Images', 'logos', 'icons', 'company_logos', 'marketing', '04 Videos', 'assets']
+    ASSET_DIRS = ['Images', 'logos', 'icons', 'company_logos', 'marketing', 'Videos', 'assets']
     def absolutize_assets(text: str) -> str:
         for d in ASSET_DIRS:
             # src="Foo/..." or href="Foo/..." (but not already absolute, hash, or full URL)
@@ -301,22 +310,86 @@ def main():
                             'src="/250129_Logos für Kalle.svg"')
         return text
 
+    # ── Wrap <img> in <picture> with AVIF + WebP sources ─────────────────
+    # Browser picks the smallest format it supports. JPG/PNG kept as fallback.
+    # Self-closing and existing <picture> wrappers are left alone.
+    IMG_WRAP_RE = re.compile(
+        r'<img\b(?P<pre>[^>]*?)\bsrc="(?P<src>[^"]+\.(?:jpe?g|png))"(?P<post>[^>]*?)>',
+        re.IGNORECASE,
+    )
+    def wrap_pictures(text: str) -> str:
+        # Skip rewriting if an <img> is already inside a <picture> (idempotent).
+        def repl(m):
+            start = m.start()
+            window = text[max(0, start - 200):start].lower()
+            if '<picture' in window and '</picture' not in window:
+                return m.group(0)
+            src = m.group('src')
+            base = src.rsplit('.', 1)[0]
+            return (
+                f'<picture>'
+                f'<source srcset="{base}.avif" type="image/avif">'
+                f'<source srcset="{base}.webp" type="image/webp">'
+                f'<img{m.group("pre")} src="{src}"{m.group("post")}>'
+                f'</picture>'
+            )
+        return IMG_WRAP_RE.sub(repl, text)
+
+    # ── Rewrite media URLs to point at R2 ───────────────────────────────
+    # Only touches the configured asset directories. Catches both absolute
+    # (/Images/...) and relative (Images/...) forms in src/href/poster/
+    # content/srcset attributes.
+    def rewrite_to_r2(text: str) -> str:
+        if not USE_R2:
+            return text
+        for d in R2_DIRS:
+            text = re.sub(
+                rf'((?:src|href|poster|content|srcset)=")/?{re.escape(d)}/',
+                rf'\g<1>{R2_BASE_URL}/{d}/',
+                text,
+            )
+            # Inline CSS url(...) references (no quotes, single, or double quoted)
+            text = re.sub(
+                rf'url\(\s*([\'"]?)/?{re.escape(d)}/',
+                rf'url(\g<1>{R2_BASE_URL}/{d}/',
+                text,
+            )
+        return text
+
     for html_file in out_path.rglob('*.html'):
         original = html_file.read_text(encoding='utf-8')
         rewritten = rewrite_html_for_external_assets(original)
         rewritten = absolutize_assets(rewritten)
+        rewritten = wrap_pictures(rewritten)
+        rewritten = rewrite_to_r2(rewritten)
         html_file.write_text(rewritten, encoding='utf-8')
-    print(f'  ✓ Rewrote {len(list(out_path.rglob("*.html")))} HTML files (external assets + absolute paths)')
+    print(f'  ✓ Rewrote {len(list(out_path.rglob("*.html")))} HTML files (external assets, absolute paths, <picture>, R2 URLs)')
+
+    # Also rewrite CSS bundle that was just written (background-image URLs etc.)
+    css_path = assets_dir / css_name
+    if css_path.exists() and USE_R2:
+        css_body = css_path.read_text(encoding='utf-8')
+        css_body = rewrite_to_r2(css_body)
+        css_path.write_text(css_body, encoding='utf-8')
+        print(f'  ✓ Rewrote CSS bundle for R2')
 
     # Copy critical assets so the prerendered site is self-contained
     if args.copy_assets:
         print('\nCopying static assets...')
-        asset_paths = [
-            'Images', 'logos', 'icons', 'company_logos', 'marketing',
-            '04 Videos', '250129_Logos für Kalle.svg',
-            'sitemap.xml', 'robots.txt', 'manifest.webmanifest',
-            'og-image.jpg', 'og-image-1200x630.jpg',
-        ]
+        if USE_R2:
+            asset_paths = [
+                '250129_Logos für Kalle.svg',
+                'sitemap.xml', 'robots.txt', 'manifest.webmanifest',
+                'og-image.jpg', 'og-image-1200x630.jpg',
+            ]
+            print(f'  (skipping {", ".join(R2_DIRS)} — served from {R2_BASE_URL})')
+        else:
+            asset_paths = [
+                'Images', 'logos', 'icons', 'company_logos', 'marketing',
+                'Videos', '250129_Logos für Kalle.svg',
+                'sitemap.xml', 'robots.txt', 'manifest.webmanifest',
+                'og-image.jpg', 'og-image-1200x630.jpg',
+            ]
         for rel in asset_paths:
             src = root / rel
             if not src.exists():

@@ -2,8 +2,31 @@
 name = 'ocgt-website-cloudflare'
 main = "worker/index.js"
 compatibility_date = "2025-01-01"
+workers_dev = true
 
 [assets]
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
+
+[observability]
+enabled = true
+
+# ─────────────────────────────────────────────────────────────────────────
+# Environment variables — set in Cloudflare dashboard, NOT here.
+#   Workers & Pages → ocgt-website-cloudflare → Settings → Variables and Secrets
+#
+# Build-time (consumed by build-prerender.py during CI build):
+#   R2_BASE_URL              public CDN host for media,
+#                            e.g. https://pub-XXXX.r2.dev or https://assets.ocgt.de
+#
+# Runtime (consumed by worker/index.js):
+#   BREVO_API_KEY            (secret) Brevo Transactional API key
+#   CONTACT_TO_EMAIL         recipient address (info@ocgt.de)
+#   CONTACT_FROM_EMAIL       verified Brevo sender
+#   CONTACT_FROM_NAME        display name on outgoing mail
+#   TURNSTILE_SECRET         (secret, optional) Cloudflare Turnstile secret
+#
+# Local-only (used by rclone for R2 uploads — NOT needed in dashboard):
+#   R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ENDPOINT, R2_ACCESS_TOKEN_VALUE
+# ─────────────────────────────────────────────────────────────────────────
