@@ -36,6 +36,10 @@ R2_BASE_URL   = os.environ.get('R2_BASE_URL', 'https://assets.ocgt.de').rstrip('
 USE_R2        = bool(R2_BASE_URL)
 R2_DIRS       = ['Images', 'logos', 'icons', 'company_logos', 'marketing', 'Videos']
 
+# Turnstile site key — injected at build time from env. Falls back to
+# Cloudflare's "always passes" test key if unset, so dev builds still render.
+TURNSTILE_SITE_KEY = os.environ.get('TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+
 ROUTES = {
     '':                        'home',
     'geotechnik':              'geotechnik',
@@ -362,6 +366,7 @@ def main():
         rewritten = absolutize_assets(rewritten)
         rewritten = wrap_pictures(rewritten)
         rewritten = rewrite_to_r2(rewritten)
+        rewritten = rewritten.replace('REPLACE_WITH_TURNSTILE_SITE_KEY', TURNSTILE_SITE_KEY)
         html_file.write_text(rewritten, encoding='utf-8')
     print(f'  ✓ Rewrote {len(list(out_path.rglob("*.html")))} HTML files (external assets, absolute paths, <picture>, R2 URLs)')
 

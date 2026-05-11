@@ -7,7 +7,7 @@
  *   CONTACT_TO_EMAIL   — recipient, e.g. info@ocgt.de
  *   CONTACT_FROM_EMAIL — verified Brevo sender, e.g. no-reply@ocgt.de
  *   CONTACT_FROM_NAME  — display name (optional, default "OCGT Website")
- *   TURNSTILE_SECRET   — optional, enables Cloudflare Turnstile verification
+ *   TURNSTILE_SECRET_KEY — optional, enables Cloudflare Turnstile verification
  */
 
 const MAX_LEN = 2000;
@@ -58,12 +58,12 @@ async function handleContact(request, env) {
     return json({ error: 'validation_failed' }, 400, cors);
   }
 
-  if (env.TURNSTILE_SECRET) {
+  if (env.TURNSTILE_SECRET_KEY) {
     const token = (body.cfTurnstileToken || '').trim();
     if (!token) return json({ error: 'captcha_missing' }, 400, cors);
     try {
       const params = new URLSearchParams();
-      params.append('secret', env.TURNSTILE_SECRET);
+      params.append('secret', env.TURNSTILE_SECRET_KEY);
       params.append('response', token);
       const ip = request.headers.get('CF-Connecting-IP');
       if (ip) params.append('remoteip', ip);
