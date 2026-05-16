@@ -5729,8 +5729,10 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
 .live-view[data-view="splat"] iframe.embed-frame {
   top:-180px;
   left:-360px;
-  width:calc(100% + 1100px);
+  width:calc(100% + 800px);
   height:calc(100% + 90px);
+  transform:scale(1.25);
+  transform-origin:50% 50%;
 }
 @media(max-width:960px){
   .live-view[data-view="pointcloud"] iframe.embed-frame,
@@ -5738,8 +5740,9 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   .live-view[data-view="splat"] iframe.embed-frame {
     top:-160px;
     left:-320px;
-    width:calc(100% + 1000px);
+    width:calc(100% + 700px);
     height:calc(100% + 85px);
+    transform:scale(1.2);
   }
 }
 @media(max-width:560px){
@@ -5748,8 +5751,9 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   .live-view[data-view="splat"] iframe.embed-frame {
     top:-140px;
     left:-260px;
-    width:calc(100% + 880px);
+    width:calc(100% + 580px);
     height:calc(100% + 80px);
+    transform:scale(1.15);
   }
 }
 
