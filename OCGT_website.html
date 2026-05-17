@@ -6078,6 +6078,12 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   from { transform:translate3d(0,0,0); }
   to   { transform:translate3d(-50%,0,0); }
 }
+@media (max-width:1024px) {
+  .sector-track { animation-duration:34s; }
+}
+@media (max-width:640px) {
+  .sector-track { animation-duration:28s; }
+}
 @media (prefers-reduced-motion:reduce) {
   .sector-track { animation:none; }
 }
@@ -8373,6 +8379,7 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
 }
 [data-theme="light"] .live-metric-lbl { color:rgba(26,26,30,.6); }
 [data-theme="light"] .live-footer-pitch { color:rgba(26,26,30,.78); }
+[data-theme="light"] .live-footer-pitch strong { color:#14161a; }
 [data-theme="light"] .live-footer-pitch em {
   background:linear-gradient(135deg, #2a9d8f 0%, #2a9d8f 60%, #1E6BD6 100%);
   -webkit-background-clip:text; background-clip:text;
@@ -8466,11 +8473,6 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   color:#1f7a6b;
   border-color:rgba(42,157,143,.28);
   background:rgba(42,157,143,.06);
-}
-[data-theme="light"] .usp-dot { background:rgba(26,26,30,.18); }
-[data-theme="light"] .usp-dot.active {
-  background:linear-gradient(135deg, #2a9d8f, #2a9d8f);
-  box-shadow:0 0 10px rgba(42,157,143,.35);
 }
 [data-theme="light"] .usp-pbar { background:rgba(26,26,30,.08); }
 
@@ -11126,8 +11128,6 @@ body { max-width:100%; }
       don't feel cropped on small screens. */
 @media (max-width:480px) {
   .trust-marquee { padding-block:1rem; }
-  .trust-marquee-item { width:80px; }
-  .trust-marquee-item img { max-height:32px; }
 }
 
 /* 7. Sticky nav pill — keep margins small and don't let it overlap
@@ -11661,17 +11661,6 @@ img, video, iframe, canvas, svg { max-width:100%; }
       .trust-marquee-label::before,
       .trust-marquee-label::after { width:18px; }
       .trust-marquee-track { animation-duration:28s; }
-      .trust-marquee-row { gap:2.5rem; padding-right:2.5rem; }
-      .trust-marquee-item { height:48px; width:110px; }
-      .trust-marquee-item img { max-height:36px; }
-      /* Reset per-logo desktop sizing — let mobile defaults apply uniformly */
-      .trust-marquee-row > .trust-marquee-item:nth-child(n),
-      .trust-marquee-row > .trust-marquee-item:nth-child(n) img { height:auto; width:110px; max-height:36px; max-width:90px; }
-      .trust-marquee-row > .trust-marquee-item:nth-child(8) img { max-height:14px; max-width:110px; }   /* Townscape */
-      .trust-marquee-row > .trust-marquee-item:nth-child(9) img { max-height:22px; max-width:110px; }  /* Prof. Quick */
-      .trust-marquee-row > .trust-marquee-item:nth-child(7) img { max-height:22px; max-width:110px; }  /* ip3 */
-      .trust-marquee-row > .trust-marquee-item:nth-child(2) img { max-height:24px; max-width:110px; }  /* Bauwert */
-      .trust-marquee-row > .trust-marquee-item:nth-child(5) img { max-height:30px; max-width:110px; }  /* Keller */
     }
     @media (prefers-reduced-motion: reduce) {
       .trust-marquee-track { animation:none !important; }
@@ -13624,12 +13613,6 @@ img, video, iframe, canvas, svg { max-width:100%; }
             <span class="usp-cinema-pill" data-de="FOTOREALISTISCH" data-en="PHOTOREALISTIC">FOTOREALISTISCH</span>
           </div>
         </div>
-      </div>
-      <div class="usp-dots">
-        <button class="usp-dot active" aria-label="Feature 1"></button>
-        <button class="usp-dot" aria-label="Feature 2"></button>
-        <button class="usp-dot" aria-label="Feature 3"></button>
-        <button class="usp-dot" aria-label="Feature 4"></button>
       </div>
       <div class="usp-pbar"><div class="usp-pbar-fill"></div></div>
     </div>
