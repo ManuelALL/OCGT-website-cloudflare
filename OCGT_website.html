@@ -5713,69 +5713,26 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   border:none; display:block;
 }
 .live-view > div { width:100%; height:100%; position:relative; }
-/* Workspace-mode iframes (all 4 tabs) — each tab uses PIX4D's /site/.../{map|model}
-   share URL so the native bottom toolbar (2D/3D toggle, zoom, settings, fullscreen,
-   snapshot) is visible. We extend each iframe past the container in all 4 directions
-   so PIX4D's chrome (top header, left "Layers" panel, right "Properties" panel +
-   drawing tools) gets clipped by .live-stage{overflow:hidden}, leaving only the
-   center viewer + annotations + the bottom action toolbar. */
-/* All four tabs now use the workspace URL (/dataset/<id>/{map|model})
-   — we crop PIX4D's chrome with negative offsets + transform:scale so
-   only the viewer canvas + bottom action toolbar remain visible. */
-/* All four tabs use the workspace /dataset/.../{map|model} URL which renders
-   PIX4D's full chrome (top header, left Layers panel, right tool panel +
-   zoom buttons, bottom dataset toolbar). We push every edge of the iframe
-   past the stage so the chrome lands outside overflow:hidden, then
-   transform:scale zooms the centre viewport so the layer dominates the
-   visible area instead of floating in PIX4D's default fit-to-screen margin. */
+/* PIX4D embed — Architecture A (Layers visible variant): oversized
+   iframe, native resolution, only the left Layers panel kept.
+   Each tab loads PIX4D's /dataset/<id>/{map|model} workspace URL, which
+   renders full chrome (top header, left Layers panel, right Properties
+   panel + tool palette, bottom dataset toolbar). We keep the left edge
+   flush so the Layers panel stays usable (toggle layer visibility,
+   opacity, etc.) and push every other piece of chrome outside
+   .live-stage{overflow:hidden}.
+   No transform:scale — WebGL paints at native pixel grid so there's no
+   upscale blur, no compensating filter, and no oversized composited
+   layer in GPU memory. Scroll-wheel zoom and drag-rotate anchor to the
+   model's true centre. */
 .live-view[data-view="ortho"] iframe.embed-frame,
 .live-view[data-view="pointcloud"] iframe.embed-frame,
 .live-view[data-view="mesh"] iframe.embed-frame,
 .live-view[data-view="splat"] iframe.embed-frame {
-  /* Less left-shift + higher scale: the previous big leftward shift was
-     pulling PIX4D's empty viewer background into the right side of the
-     stage. Reverting to a smaller shift (-440) and bumping scale to 2.3
-     keeps the 3D model centred in the stage and zoomed in enough that it
-     fills the visible area cleanly with no empty space on either side.
-     Right palette still pushed well past the stage edge by the higher scale.
-     filter:contrast/saturate compensates for the WebGL upscale softening. */
-  top:-80px;
-  left:-440px;
-  width:calc(100% + 1180px);
-  height:calc(100% + 200px);
-  transform:scale(2.3) translateZ(0);
-  transform-origin:22% 50%;
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  image-rendering:-webkit-optimize-contrast;
-  will-change:transform;
-  filter:contrast(1.07) saturate(1.05);
-}
-@media(max-width:960px){
-  .live-view[data-view="ortho"] iframe.embed-frame,
-  .live-view[data-view="pointcloud"] iframe.embed-frame,
-  .live-view[data-view="mesh"] iframe.embed-frame,
-  .live-view[data-view="splat"] iframe.embed-frame {
-    top:-66px;
-    left:-380px;
-    width:calc(100% + 1000px);
-    height:calc(100% + 170px);
-    transform:scale(2.15) translateZ(0);
-    transform-origin:22% 50%;
-  }
-}
-@media(max-width:560px){
-  .live-view[data-view="ortho"] iframe.embed-frame,
-  .live-view[data-view="pointcloud"] iframe.embed-frame,
-  .live-view[data-view="mesh"] iframe.embed-frame,
-  .live-view[data-view="splat"] iframe.embed-frame {
-    top:-54px;
-    left:-290px;
-    width:calc(100% + 760px);
-    height:calc(100% + 130px);
-    transform:scale(1.85) translateZ(0);
-    transform-origin:21% 50%;
-  }
+  top: -56px;                  /* hide top header */
+  left: 0;                     /* KEEP left Layers panel visible */
+  width: calc(100% + 340px);   /* extend right to hide Properties panel + tool palette */
+  height: calc(100% + 120px);  /* +56 top + 64 bottom → hide bottom toolbar */
 }
 
 /* Blocked (cookie consent) state */
