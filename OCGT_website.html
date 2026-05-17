@@ -5732,10 +5732,13 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
 .live-view[data-view="pointcloud"] iframe.embed-frame,
 .live-view[data-view="mesh"] iframe.embed-frame,
 .live-view[data-view="splat"] iframe.embed-frame {
-  top:-56px;
-  left:-320px;
-  width:calc(100% + 700px);
-  height:calc(100% + 130px);
+  /* Aggressive right-side overhang to guarantee PIX4D's full tool palette
+     (icon column + collapse "<" toggle) lands off-stage regardless of the
+     panel's expanded state. Tuned against the deployed Cloudflare build. */
+  top:-72px;
+  left:-360px;
+  width:calc(100% + 980px);
+  height:calc(100% + 170px);
   transform:scale(1.55);
   transform-origin:50% 50%;
 }
@@ -5744,10 +5747,10 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   .live-view[data-view="pointcloud"] iframe.embed-frame,
   .live-view[data-view="mesh"] iframe.embed-frame,
   .live-view[data-view="splat"] iframe.embed-frame {
-    top:-50px;
-    left:-280px;
-    width:calc(100% + 600px);
-    height:calc(100% + 110px);
+    top:-60px;
+    left:-300px;
+    width:calc(100% + 820px);
+    height:calc(100% + 140px);
     transform:scale(1.45);
   }
 }
@@ -5756,10 +5759,10 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   .live-view[data-view="pointcloud"] iframe.embed-frame,
   .live-view[data-view="mesh"] iframe.embed-frame,
   .live-view[data-view="splat"] iframe.embed-frame {
-    top:-44px;
-    left:-220px;
-    width:calc(100% + 480px);
-    height:calc(100% + 96px);
+    top:-50px;
+    left:-240px;
+    width:calc(100% + 620px);
+    height:calc(100% + 110px);
     transform:scale(1.3);
   }
 }
