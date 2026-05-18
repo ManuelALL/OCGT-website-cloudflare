@@ -8372,6 +8372,7 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
 }
 [data-theme="light"] .live-metric-lbl { color:rgba(26,26,30,.6); }
 [data-theme="light"] .live-footer-pitch { color:rgba(26,26,30,.78); }
+[data-theme="light"] .live-footer-pitch strong { color:rgba(26,26,30,.95); }
 [data-theme="light"] .live-footer-pitch em {
   background:linear-gradient(135deg, #2a9d8f 0%, #2a9d8f 60%, #1E6BD6 100%);
   -webkit-background-clip:text; background-clip:text;
@@ -11125,8 +11126,6 @@ body { max-width:100%; }
       don't feel cropped on small screens. */
 @media (max-width:480px) {
   .trust-marquee { padding-block:1rem; }
-  .trust-marquee-item { width:80px; }
-  .trust-marquee-item img { max-height:32px; }
 }
 
 /* 7. Sticky nav pill — keep margins small and don't let it overlap
@@ -11661,16 +11660,19 @@ img, video, iframe, canvas, svg { max-width:100%; }
       .trust-marquee-label::after { width:18px; }
       .trust-marquee-track { animation-duration:28s; }
       .trust-marquee-row { gap:2.5rem; padding-right:2.5rem; }
-      .trust-marquee-item { height:48px; width:110px; }
-      .trust-marquee-item img { max-height:36px; }
-      /* Reset per-logo desktop sizing — let mobile defaults apply uniformly */
-      .trust-marquee-row > .trust-marquee-item:nth-child(n),
-      .trust-marquee-row > .trust-marquee-item:nth-child(n) img { height:auto; width:110px; max-height:36px; max-width:90px; }
-      .trust-marquee-row > .trust-marquee-item:nth-child(8) img { max-height:14px; max-width:110px; }   /* Townscape */
-      .trust-marquee-row > .trust-marquee-item:nth-child(9) img { max-height:22px; max-width:110px; }  /* Prof. Quick */
-      .trust-marquee-row > .trust-marquee-item:nth-child(7) img { max-height:22px; max-width:110px; }  /* ip3 */
-      .trust-marquee-row > .trust-marquee-item:nth-child(2) img { max-height:24px; max-width:110px; }  /* Bauwert */
-      .trust-marquee-row > .trust-marquee-item:nth-child(5) img { max-height:30px; max-width:110px; }  /* Keller */
+      /* Uniform optical size on mobile: every logo renders at the same
+         height (36px) and width auto-fits its aspect ratio. Overrides
+         every desktop per-logo nth-child rule. */
+      .trust-marquee-row > .trust-marquee-item:nth-child(n) {
+        height:36px;
+        width:auto;
+      }
+      .trust-marquee-row > .trust-marquee-item:nth-child(n) img {
+        height:36px;
+        width:auto;
+        max-height:36px;
+        max-width:none;
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       .trust-marquee-track { animation:none !important; }
@@ -13553,7 +13555,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
             </span>
           </div>
           <div class="live-footer-cta">
-            <a href="https://cloud.pix4d.com/site/537406/dataset/2647627/model?shareToken=a607531d-8246-49d9-a760-df60211b6b45" target="_blank" rel="noopener noreferrer" class="live-fullscreen-btn live-fullscreen-btn--cta">
+            <a href="https://cloud.pix4d.com/site/537406/dataset/2647627/map?shareToken=a607531d-8246-49d9-a760-df60211b6b45" target="_blank" rel="noopener noreferrer" class="live-fullscreen-btn live-fullscreen-btn--cta">
               <span class="live-fullscreen-spark" aria-hidden="true"></span>
               <span class="de-only">Im Vollbild öffnen</span>
               <span class="en-only">Open fullscreen</span>
@@ -13561,7 +13563,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
             </a>
           </div>
           <p class="live-footer-pitch">
-            <span class="de-only">Erleben Sie <strong>alle Funktionen</strong> und <strong>vollen Zugriff</strong> auf unsere Plattform.</span>
+            <span class="de-only">Erleben Sie <strong>alle Funktionen</strong> und <strong>vollen Zugriff</strong> auf unserer Plattform.</span>
             <span class="en-only">Experience <strong>every feature</strong> with <strong>full access</strong> to our platform.</span>
           </p>
         </div>
@@ -15433,7 +15435,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
             </span>
           </div>
           <div class="live-footer-cta">
-            <a href="https://cloud.pix4d.com/site/537406/dataset/2647627/model?shareToken=a607531d-8246-49d9-a760-df60211b6b45" target="_blank" rel="noopener noreferrer" class="live-fullscreen-btn live-fullscreen-btn--cta">
+            <a href="https://cloud.pix4d.com/site/537406/dataset/2647627/map?shareToken=a607531d-8246-49d9-a760-df60211b6b45" target="_blank" rel="noopener noreferrer" class="live-fullscreen-btn live-fullscreen-btn--cta">
               <span class="live-fullscreen-spark" aria-hidden="true"></span>
               <span class="de-only">Im Vollbild öffnen</span>
               <span class="en-only">Open fullscreen</span>
@@ -15441,7 +15443,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
             </a>
           </div>
           <p class="live-footer-pitch">
-            <span class="de-only">Erleben Sie <strong>alle Funktionen</strong> und <strong>vollen Zugriff</strong> auf unsere Plattform.</span>
+            <span class="de-only">Erleben Sie <strong>alle Funktionen</strong> und <strong>vollen Zugriff</strong> auf unserer Plattform.</span>
             <span class="en-only">Experience <strong>every feature</strong> with <strong>full access</strong> to our platform.</span>
           </p>
         </div>
@@ -18448,6 +18450,34 @@ if (document.readyState === 'loading') {
       track.appendChild(clone);
     });
     wrap.appendChild(track);
+  })();
+
+  /* ── Normalise marquee speeds: trust-marquee + sector-track move at the
+     same px/sec regardless of their (different) track widths. ── */
+  (function syncMarqueeSpeeds(){
+    const SPEED = 90; /* px per second */
+    const targets = [
+      { track: document.querySelector('.sector-track') },
+      { track: document.querySelector('.trust-marquee-track') },
+    ].filter(t => t.track);
+    if (!targets.length) return;
+    const apply = () => {
+      targets.forEach(({ track }) => {
+        const halfWidth = track.scrollWidth / 2;
+        if (halfWidth > 0) {
+          track.style.animationDuration = (halfWidth / SPEED).toFixed(2) + 's';
+        }
+      });
+    };
+    apply();
+    let raf = null;
+    window.addEventListener('resize', () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(apply);
+    }, { passive: true });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(apply).catch(() => {});
+    }
   })();
 
   /* Keep indicator aligned on resize (container reflows) */
