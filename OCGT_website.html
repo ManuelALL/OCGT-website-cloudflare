@@ -19950,9 +19950,9 @@ document.body.classList.remove('has-announce');
     else if(!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
   });
 
-  /* Form submission — POST to /api/contact (same Brevo pipeline as the main form) */
-  const submitBtn = form?.querySelector('.exit-modal-submit');
-  form?.addEventListener('submit', async (e) => {
+  /* Form submission — prefill the main Kontakt form with the entered email
+     and navigate the user there so they can complete the full request. */
+  form?.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = input.value.trim();
     if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -19961,38 +19961,36 @@ document.body.classList.remove('has-announce');
       return;
     }
     input.removeAttribute('aria-invalid');
-    if(submitBtn){ submitBtn.disabled = true; submitBtn.style.opacity = '0.6'; }
 
-    const payload = {
-      vorname: 'Website',
-      nachname: 'Lead (Exit-Intent)',
-      email,
-      firma: '',
-      leistung: '',
-      nachricht: 'Schnellkontakt über Exit-Intent-Popup. Bitte zurückrufen / per E-Mail antworten.',
-      _subject: 'Neue Anfrage — Exit-Intent Popup (ocgt.de)',
+    /* Remember dismissal so the popup doesn't reappear */
+    try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e){}
+
+    /* Close the modal, navigate to the Kontakt page, and prefill the email field.
+       Uses the SPA router go('contact') when available; falls back to /kontakt. */
+    close();
+    const goToContact = () => {
+      if (typeof window.go === 'function') {
+        window.go('contact');
+      } else {
+        window.location.href = '/kontakt';
+        return;
+      }
+      /* Prefill + focus next field after the section renders */
+      setTimeout(() => {
+        const emailField = document.getElementById('f-em');
+        if (emailField) {
+          emailField.value = email;
+          emailField.dispatchEvent(new Event('input', { bubbles: true }));
+          emailField.dispatchEvent(new Event('change', { bubbles: true }));
+          /* Scroll into view and focus the message field so they can finish */
+          emailField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const msg = document.getElementById('f-msg') || document.querySelector('textarea[name="nachricht"], textarea[name="message"]');
+          (msg || emailField).focus();
+        }
+      }, 250);
     };
-
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if(!res.ok) throw new Error('HTTP ' + res.status);
-      success.classList.add('is-visible');
-      form.style.display = 'none';
-      try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e){}
-      setTimeout(close, 2500);
-    } catch(err) {
-      console.error('exit-modal submit failed', err);
-      if(submitBtn){ submitBtn.disabled = false; submitBtn.style.opacity = ''; }
-      input.setAttribute('aria-invalid', 'true');
-      /* Fallback: open mail client so the lead isn't lost */
-      window.location.href = 'mailto:info@ocgt.de?subject=' +
-        encodeURIComponent('Projekt-Anfrage') +
-        '&body=' + encodeURIComponent('Hallo OCGT,\n\nBitte nehmen Sie Kontakt mit mir auf.\n\nE-Mail: ' + email + '\n');
-    }
+    /* Small defer so the close animation can start before we navigate */
+    setTimeout(goToContact, 120);
   });
 
   /* EXIT INTENT DETECTION */
