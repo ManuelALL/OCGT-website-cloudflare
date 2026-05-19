@@ -19950,8 +19950,9 @@ document.body.classList.remove('has-announce');
     else if(!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
   });
 
-  /* Form submission */
-  form?.addEventListener('submit', (e) => {
+  /* Form submission — POST to /api/contact (same Brevo pipeline as the main form) */
+  const submitBtn = form?.querySelector('.exit-modal-submit');
+  form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = input.value.trim();
     if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -19959,14 +19960,39 @@ document.body.classList.remove('has-announce');
       input.focus();
       return;
     }
-    /* Simulate submit — replace with real API/mailto */
-    window.location.href = 'mailto:info@ocgt.de?subject=' +
-      encodeURIComponent('Projekt-Anfrage') +
-      '&body=' + encodeURIComponent('Hallo OCGT,\n\nBitte nehmen Sie Kontakt mit mir auf.\n\nE-Mail: ' + email + '\n');
-    success.classList.add('is-visible');
-    form.style.display = 'none';
-    try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e){}
-    setTimeout(close, 2500);
+    input.removeAttribute('aria-invalid');
+    if(submitBtn){ submitBtn.disabled = true; submitBtn.style.opacity = '0.6'; }
+
+    const payload = {
+      vorname: 'Website',
+      nachname: 'Lead (Exit-Intent)',
+      email,
+      firma: '',
+      leistung: '',
+      nachricht: 'Schnellkontakt über Exit-Intent-Popup. Bitte zurückrufen / per E-Mail antworten.',
+      _subject: 'Neue Anfrage — Exit-Intent Popup (ocgt.de)',
+    };
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      success.classList.add('is-visible');
+      form.style.display = 'none';
+      try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e){}
+      setTimeout(close, 2500);
+    } catch(err) {
+      console.error('exit-modal submit failed', err);
+      if(submitBtn){ submitBtn.disabled = false; submitBtn.style.opacity = ''; }
+      input.setAttribute('aria-invalid', 'true');
+      /* Fallback: open mail client so the lead isn't lost */
+      window.location.href = 'mailto:info@ocgt.de?subject=' +
+        encodeURIComponent('Projekt-Anfrage') +
+        '&body=' + encodeURIComponent('Hallo OCGT,\n\nBitte nehmen Sie Kontakt mit mir auf.\n\nE-Mail: ' + email + '\n');
+    }
   });
 
   /* EXIT INTENT DETECTION */
