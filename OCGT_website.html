@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html lang="de" dir="ltr">
+<html lang="de" dir="ltr" class="lang-de">
 <head>
 <meta charset="UTF-8">
+<!-- Apply saved language class before first paint so only one language renders
+     (prevents the brief flash of both DE + EN text in the hero). -->
+<script>(function(){try{var d=document.documentElement,l=localStorage.getItem('ocgt_lang');if(l!=='de'&&l!=='en')l=(d.lang==='en'?'en':'de');d.lang=l;d.classList.remove('lang-de','lang-en');d.classList.add('lang-'+l);}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -215,7 +218,7 @@
       "name": "Wie dokumentieren Sie den Baufortschritt mit Drohnen?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Wir fliegen Baustellen in regelmäßigen Intervallen (wöchentlich oder monatlich), liefern georeferenzierte Orthofotos und 3D-Modelle und ermöglichen Soll-Ist-Vergleiche direkt im BIM-Modell. So bleibt der gesamte Bauverlauf nachvollziehbar dokumentiert."
+        "text": "Wir fliegen Baustellen in regelmäßigen Intervallen (wöchentlich oder monatlich), liefern georeferenzierte Orthofotos und 3D-Modelle und ermöglichen Soll-Ist-Vergleiche direkt im Browser. So bleibt der gesamte Bauverlauf nachvollziehbar dokumentiert."
       }
     }
   ]
@@ -3031,12 +3034,13 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
 .disc-bento-svc-label {
   display:block;
   font-family:'DM Sans', 'Source Sans 3', system-ui, sans-serif;
-  font-size:1.05rem; font-weight:600;
+  font-size:1.05rem; font-weight:700;
   line-height:1;
-  color:#2a9d8f;
+  color:#6fe9d6;
   letter-spacing:.005em;
   margin:0; padding:0;
-  opacity:.95;
+  opacity:1;
+  text-shadow:0 1px 10px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.65);
 }
 /* Service tiles — editorial-tech glass cards with monospaced index.
    2-col grid, hairline border, mint underline reveals on hover. */
@@ -5659,6 +5663,11 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   background:var(--bg1);
   overflow:hidden;
 }
+/* While the mouse hovers an embedded 3D viewer, lock page scroll so wheel-zoom
+   inside the (cross-origin) viewer can't chain-scroll the page. Scrollbar width
+   is compensated so the layout doesn't shift (a no-op on overlay-scrollbar OSes). */
+html.viewer-noscroll { overflow:hidden; }
+html.viewer-noscroll body { padding-right:var(--viewer-sbw, 0px); }
 /* Subtle grid pattern backdrop (technical drawing feel) */
 .live-grid {
   position:absolute; inset:0;
@@ -6055,9 +6064,15 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
 /* ════════════════════════════════════════════════════════════════
    SECTORS — horizontal scroll carousel with background images
 ════════════════════════════════════════════════════════════════ */
+.sector-shell { position:relative; }
 .sector-scroll {
   display:block;
-  overflow:hidden;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  cursor:grab;
   padding:1.5rem 2.5rem 2rem;
   margin:-.75rem -2.5rem -1rem;
   max-width:100vw;
@@ -6065,22 +6080,40 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%);
   mask-image:linear-gradient(90deg, transparent 0, #000 60px, #000 calc(100% - 60px), transparent 100%);
 }
+.sector-scroll::-webkit-scrollbar { display:none; }
+.sector-scroll.is-dragging { cursor:grabbing; }
 .sector-track {
   display:flex;
   gap:clamp(.75rem, 1.5vw, 1.25rem);
   width:max-content;
-  animation:sectorMarquee 38s linear infinite;
-  will-change:transform;
 }
-@media (hover:hover) and (pointer:fine) {
-  .sector-scroll:hover .sector-track { animation-play-state:paused; }
+
+/* Manual nav arrows (mouse / desktop — touch users swipe) */
+.sector-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  z-index:5;
+  width:44px; height:44px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%;
+  border:1px solid rgba(248,248,224,.14);
+  background:rgba(18,20,26,.72);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  color:rgba(248,248,224,.92);
+  cursor:pointer;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  transition:background .25s ease, border-color .25s ease, color .25s ease, opacity .25s ease;
 }
-@keyframes sectorMarquee {
-  from { transform:translate3d(0,0,0); }
-  to   { transform:translate3d(-50%,0,0); }
+.sector-nav:hover { background:rgba(42,157,143,.92); border-color:rgba(42,157,143,.92); color:#fff; }
+.sector-nav:active { transform:translateY(-50%) scale(.93); }
+.sector-nav svg { width:20px; height:20px; }
+.sector-nav--prev { left:.4rem; }
+.sector-nav--next { right:.4rem; }
+[data-theme="light"] .sector-nav {
+  background:rgba(255,255,255,.85); border-color:rgba(26,26,30,.12); color:rgba(26,26,30,.82);
 }
-@media (prefers-reduced-motion:reduce) {
-  .sector-track { animation:none; }
+[data-theme="light"] .sector-nav:hover { background:rgba(42,157,143,.92); border-color:rgba(42,157,143,.92); color:#fff; }
+@media (hover:none) and (pointer:coarse) {
+  .sector-nav { display:none; }
 }
 
 .sec-tile {
@@ -8468,12 +8501,6 @@ button.hero-x-hud:focus-visible { outline:2px solid #2a9d8f; outline-offset:3px;
   border-color:rgba(42,157,143,.28);
   background:rgba(42,157,143,.06);
 }
-[data-theme="light"] .usp-dot { background:rgba(26,26,30,.18); }
-[data-theme="light"] .usp-dot.active {
-  background:linear-gradient(135deg, #2a9d8f, #2a9d8f);
-  box-shadow:0 0 10px rgba(42,157,143,.35);
-}
-[data-theme="light"] .usp-pbar { background:rgba(26,26,30,.08); }
 
 /* ── LIGHT THEME: Eyebrow labels everywhere — dark teal to match .disc-header ── */
 [data-theme="light"] .lbl { color:#0f5f50; font-weight:700; }
@@ -8717,7 +8744,6 @@ footer {
   .sb-icon svg { width:15px; height:15px; }
   .sb-num { font-size:1rem; }
   .sb-desc { font-size:.55rem; }
-  .usp-pbar { display:none; }
   .three-col { grid-template-columns:1fr; }
   .four-col { grid-template-columns:1fr 1fr; }
   .proc-steps { grid-template-columns:1fr; }
@@ -12022,7 +12048,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
           <div class="hud-ind" style="--d:0s">
             <span class="hud-ind-light"></span>
             <span class="hud-ind-code">01</span>
-            <span class="hud-ind-name" data-de="Bau & Spezialtiefbau" data-en="Construction & Deep Foundation">Bau & Spezialtiefbau</span>
+            <span class="hud-ind-name" data-de="Projektentwicklung & Bauwesen" data-en="Project Development & Construction">Projektentwicklung & Bauwesen</span>
             <span class="hud-ind-meta">LPH 8 · ACTIVE</span>
           </div>
           <div class="hud-ind" style="--d:.4s">
@@ -12457,7 +12483,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
         <img class="bento-sector-img" src="marketing/IMG_20200930_172613_mix01.jpg" width="5120" height="3840" alt="" aria-hidden="true" loading="lazy">
         <div class="bento-sector-body">
           <span class="bento-sector-ico"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,80H108.94L87.16,36.42A8,8,0,0,0,80,32H48a8,8,0,0,0-8,8V80H24a8,8,0,0,0,0,16H40V208H24a8,8,0,0,0,0,16H128a8,8,0,0,0,0-16H112V96h96v88H192v-8a8,8,0,0,0-16,0v8a16,16,0,0,0,16,16h16a16,16,0,0,0,16-16V96h16a8,8,0,0,0,0-16ZM56,48H75.06l16,32H56Zm0,160V160H96v48Zm40-64H56V96H96Z"/></svg></span>
-          <h3 data-de="Bau & Spezialtiefbau" data-en="Construction & Deep Foundation">Bau & Spezialtiefbau</h3>
+          <h3 data-de="Projektentwicklung & Bauwesen" data-en="Project Development & Construction">Projektentwicklung & Bauwesen</h3>
           <p class="de-only">Bauüberwachung (LPH 8) und lückenlose 3D-Dokumentation für Bauherren und Generalunternehmer.</p>
           <p class="en-only">Site supervision (LPH 8) and seamless 3D documentation for clients and main contractors.</p>
         </div>
@@ -12844,12 +12870,16 @@ img, video, iframe, canvas, svg { max-width:100%; }
   <div class="sec rv" style="padding-top:0;padding-bottom:2.5rem;overflow:hidden;">
     <div class="lbl" data-de="Zielbranchen" data-en="Target sectors">Zielbranchen</div>
     <h2 class="ttl" data-de="Wer arbeitet mit uns?" data-en="Who works with us?" style="margin-bottom:.5rem;">Wer arbeitet mit uns?</h2>
+    <div class="sector-shell">
+    <button type="button" class="sector-nav sector-nav--prev" data-sector-nav="prev" aria-label="Vorherige Branchen" data-aria-label-de="Vorherige Branchen" data-aria-label-en="Previous sectors">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <div class="sector-scroll">
       <div class="sec-tile rv">
         <img class="sec-tile-img" src="marketing/construction-cranes-aerial-1600.jpg" width="1600" height="752" alt="" aria-hidden="true" loading="lazy">
         <div class="sec-tile-content">
           <span class="st-icon"><svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M104,88V216H48V40H80Z" opacity=".2"/><path d="M240,80H108.94L87.16,36.42A8,8,0,0,0,80,32H48a8,8,0,0,0-8,8V80H24a8,8,0,0,0,0,16H40V208H24a8,8,0,0,0,0,16H128a8,8,0,0,0,0-16H112V96h96v88H192v-8a8,8,0,0,0-16,0v8a16,16,0,0,0,16,16h16a16,16,0,0,0,16-16V96h16a8,8,0,0,0,0-16ZM56,48H75.06l16,32H56Zm0,160V160H96v48Zm40-64H56V96H96Z"/></svg></span>
-          <h3 data-de="Bau & Spezialtiefbau" data-en="Construction & Deep Foundation">Bau & Spezialtiefbau</h3>
+          <h3 data-de="Projektentwicklung & Bauwesen" data-en="Project Development & Construction">Projektentwicklung & Bauwesen</h3>
           <p data-de="Verlässliche Bauüberwachung (LPH 8) und lückenlose 3D-Dokumentation für Bauherren und Generalunternehmer." data-en="Reliable site supervision (LPH 8) and seamless 3D documentation for clients and general contractors.">Verlässliche Bauüberwachung (LPH 8) und lückenlose 3D-Dokumentation für Bauherren und Generalunternehmer.</p>
         </div>
       </div>
@@ -12893,6 +12923,10 @@ img, video, iframe, canvas, svg { max-width:100%; }
           <p data-de="Beweissicherung, Infrastrukturerfassung und Baudokumentation für reibungslose Genehmigungsverfahren." data-en="Preservation of evidence, infrastructure mapping, and construction documentation for smooth approvals.">Beweissicherung, Infrastrukturerfassung und Baudokumentation für reibungslose Genehmigungsverfahren.</p>
         </div>
       </div>
+    </div>
+    <button type="button" class="sector-nav sector-nav--next" data-sector-nav="next" aria-label="Nächste Branchen" data-aria-label-de="Nächste Branchen" data-aria-label-en="Next sectors">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     </div>
   </div>
 
@@ -13630,13 +13664,6 @@ img, video, iframe, canvas, svg { max-width:100%; }
           </div>
         </div>
       </div>
-      <div class="usp-dots">
-        <button class="usp-dot active" aria-label="Feature 1"></button>
-        <button class="usp-dot" aria-label="Feature 2"></button>
-        <button class="usp-dot" aria-label="Feature 3"></button>
-        <button class="usp-dot" aria-label="Feature 4"></button>
-      </div>
-      <div class="usp-pbar"><div class="usp-pbar-fill"></div></div>
     </div>
   </div>
 
@@ -13696,7 +13723,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
         </picture>
         <div class="sc-meta-top">
           <span class="sc-badge sc-badge--hero">★ <span class="de-only">Referenzprojekt</span><span class="en-only">Flagship</span></span>
-          <span class="sc-badge">2023–24</span>
+          <span class="sc-badge">2012–14</span>
           <span class="sc-badge">Berlin Mitte</span>
         </div>
         <div class="sc-overlay">
@@ -14366,7 +14393,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
             <span><span class="de-only">Wie dokumentieren Sie den Baufortschritt mit Drohnen?</span><span class="en-only">How do you document construction progress with drones?</span></span>
             <span class="faq-icon">+</span>
           </button>
-          <div class="faq-a" role="region"><div class="faq-a-inner"><span class="de-only">Wir fliegen Baustellen in <strong style="color:var(--text)">regelmäßigen Intervallen</strong> (wöchentlich oder monatlich), liefern georeferenzierte Orthofotos und 3D-Modelle und ermöglichen <strong style="color:var(--text)">Soll-Ist-Vergleiche</strong> direkt im BIM-Modell. So bleibt der gesamte Bauverlauf nachvollziehbar dokumentiert.</span><span class="en-only">We fly construction sites at <strong style="color:var(--text)">regular intervals</strong> (weekly or monthly), deliver georeferenced orthophotos and 3D models, and enable <strong style="color:var(--text)">plan-vs-actual comparisons</strong> directly inside the BIM model. The full construction timeline stays traceably documented.</span></div></div>
+          <div class="faq-a" role="region"><div class="faq-a-inner"><span class="de-only">Wir fliegen Baustellen in <strong style="color:var(--text)">regelmäßigen Intervallen</strong> (wöchentlich oder monatlich), liefern georeferenzierte Orthofotos und 3D-Modelle und ermöglichen <strong style="color:var(--text)">Soll-Ist-Vergleiche</strong> direkt im Browser. So bleibt der gesamte Bauverlauf nachvollziehbar dokumentiert.</span><span class="en-only">We fly construction sites at <strong style="color:var(--text)">regular intervals</strong> (weekly or monthly), deliver georeferenced orthophotos and 3D models, and enable <strong style="color:var(--text)">plan-vs-actual comparisons</strong> directly in the browser. The full construction timeline stays traceably documented.</span></div></div>
         </div>
 
 
@@ -18431,25 +18458,121 @@ if (document.readyState === 'loading') {
     boot();
   }
 
-  /* ── Sector tiles: seamless infinite marquee ──
-     Wraps tiles in a track, clones once; CSS animates translateX 0 → -50% */
-  (function initSectorMarquee(){
+  /* ── Sector tiles: real scroll container with auto-advance + manual control ──
+     Native swipe/trackpad, click-and-drag, and arrow buttons. Auto-advance
+     pauses on any interaction and resumes when idle. Loops seamlessly via a
+     cloned second set; scrollLeft is normalised to keep the loop invisible. */
+  (function initSectorScroller(){
     const wrap = document.querySelector('.sector-scroll');
-    if (!wrap) return;
-    if (wrap.querySelector('.sector-track')) return; /* already initialised */
+    if (!wrap || wrap.dataset.scrollerInit) return;
+    wrap.dataset.scrollerInit = '1';
+
     const tiles = Array.from(wrap.children).filter(n => n.nodeType === 1);
     if (!tiles.length) return;
     const track = document.createElement('div');
     track.className = 'sector-track';
     tiles.forEach(t => track.appendChild(t));
-    tiles.forEach(t => {
-      const clone = t.cloneNode(true);
-      clone.setAttribute('aria-hidden','true');
-      /* strip interactive IDs inside clones to avoid duplicates */
-      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-      track.appendChild(clone);
-    });
+    const originals = Array.from(track.children);
+    for (let c = 0; c < 2; c++) {
+      originals.forEach(t => {
+        const clone = t.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+        track.appendChild(clone);
+      });
+    }
     wrap.appendChild(track);
+
+    const reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const SPEED  = 38; /* seconds per full set — matches the previous marquee */
+
+    let paused = false, dragging = false, moved = false;
+    let startX = 0, startScroll = 0;
+    let pxPerMs = 0, last = performance.now(), smoothUntil = 0, idleTimer, positioned = false;
+
+    /* Three identical sets back-to-back; rest in the middle set so there is a
+       full set of room on BOTH sides for forward and backward scrolling. */
+    const setWidth = () => track.scrollWidth / 3;
+    function computeSpeed(){ const w = setWidth(); pxPerMs = w > 0 ? w / (SPEED * 1000) : 0; }
+    function normalize(){
+      const w = setWidth();
+      if (w <= 0) return;
+      if (wrap.scrollLeft >= 2 * w) wrap.scrollLeft -= w;
+      else if (wrap.scrollLeft < w) wrap.scrollLeft += w;
+    }
+    const pause  = () => { paused = true; };
+    const resume = () => { paused = false; last = performance.now(); };
+    function resumeSoon(ms){ clearTimeout(idleTimer); idleTimer = setTimeout(resume, ms || 1600); }
+
+    computeSpeed();
+    function tick(now){
+      const dt = now - last; last = now;
+      if (pxPerMs <= 0) computeSpeed();
+      if (!positioned) { const w = setWidth(); if (w > 0) { wrap.scrollLeft = w; positioned = true; } }
+      if (!paused && !reduce && pxPerMs > 0) wrap.scrollLeft += pxPerMs * dt;
+      if (now > smoothUntil) normalize();
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    /* Hover (mouse) pauses */
+    wrap.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') pause(); });
+    wrap.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !dragging) resume(); });
+
+    /* Touch / trackpad: pause during, resume when idle */
+    wrap.addEventListener('wheel',      () => { pause(); resumeSoon(1400); }, { passive: true });
+    wrap.addEventListener('touchstart', () => { pause(); }, { passive: true });
+    wrap.addEventListener('touchend',   () => { resumeSoon(1400); }, { passive: true });
+
+    /* Click-and-drag (mouse) */
+    wrap.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse') return;
+      dragging = true; moved = false;
+      startX = e.clientX; startScroll = wrap.scrollLeft;
+      wrap.classList.add('is-dragging');
+      try { wrap.setPointerCapture(e.pointerId); } catch(_){}
+      pause();
+    });
+    wrap.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 4) moved = true;
+      wrap.scrollLeft = startScroll - dx;
+    });
+    function endDrag(e){
+      if (!dragging) return;
+      dragging = false;
+      wrap.classList.remove('is-dragging');
+      try { wrap.releasePointerCapture(e.pointerId); } catch(_){}
+      resumeSoon(1200);
+    }
+    wrap.addEventListener('pointerup', endDrag);
+    wrap.addEventListener('pointercancel', endDrag);
+    /* Swallow the click that follows a drag so tiles don't fire navigation */
+    wrap.addEventListener('click', e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+
+    /* Arrow buttons */
+    const shell = wrap.closest('.sector-shell');
+    if (shell){
+      const stepSize = () => {
+        const tile = track.querySelector('.sec-tile');
+        const gap  = parseFloat(getComputedStyle(track).gap) || 16;
+        return tile ? tile.getBoundingClientRect().width + gap : wrap.clientWidth * 0.8;
+      };
+      shell.querySelectorAll('[data-sector-nav]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const dir = btn.dataset.sectorNav === 'prev' ? -1 : 1;
+          pause();
+          smoothUntil = performance.now() + 500;
+          wrap.scrollBy({ left: dir * stepSize(), behavior: 'smooth' });
+          resumeSoon(1800);
+        });
+      });
+    }
+
+    const recompute = () => { computeSpeed(); normalize(); };
+    window.addEventListener('resize', recompute, { passive: true });
+    document.addEventListener('ocgt:langchange', recompute);
   })();
 
   /* Keep indicator aligned on resize (container reflows) */
@@ -18928,6 +19051,37 @@ function loadB1Embeds() {
 function scrollToDemo() {
   document.getElementById('demo-anchor').scrollIntoView({behavior:'smooth'});
 }
+
+/* ── Keep wheel-zoom inside the embedded 3D viewers from scrolling the page ──
+   PIX4D viewers are cross-origin iframes whose wheel events can chain-scroll the
+   parent. While the mouse hovers a loaded viewer, lock page scroll; restore on
+   leave. Mouse-only — touch users still scroll the page by swiping. */
+(function preventViewerScrollLeak(){
+  const stages = document.querySelectorAll('.live-stage');
+  if (!stages.length) return;
+  let locks = 0;
+  function lockScroll(){
+    if (locks++ > 0) return;
+    const sbw = window.innerWidth - document.documentElement.clientWidth;
+    document.documentElement.style.setProperty('--viewer-sbw', sbw + 'px');
+    document.documentElement.classList.add('viewer-noscroll');
+  }
+  function unlockScroll(){
+    locks = Math.max(0, locks - 1);
+    if (locks === 0) document.documentElement.classList.remove('viewer-noscroll');
+  }
+  stages.forEach(st => {
+    let locked = false;
+    st.addEventListener('mouseenter', () => {
+      if (locked || !st.querySelector('iframe')) return; /* only when a viewer is loaded */
+      locked = true; lockScroll();
+    });
+    st.addEventListener('mouseleave', () => {
+      if (!locked) return;
+      locked = false; unlockScroll();
+    });
+  });
+})();
 
 /* ── REFERENCES BENTO FILTER ── */
 (function initRefsFilter(){
