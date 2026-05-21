@@ -24,8 +24,6 @@ import os
 import re
 import shutil
 import sys
-import json
-from html import unescape as html_unescape
 from pathlib import Path
 
 # ── Source-of-truth route map. Mirror of ROUTES in OCGT_website.html. ──
@@ -66,293 +64,6 @@ ROUTES = {
 }
 
 
-# ── Schema.org / JSON-LD per-route generation ──────────────────────────
-SITE_URL = 'https://ocgt.de'
-
-# Human-readable German names per route slug (breadcrumb labels, serviceType).
-ROUTE_NAMES = {
-    '':                        'Startseite',
-    'geotechnik':              'Geotechnik',
-    'bauueberwachung':         'Bauüberwachung',
-    'vergabe':                 'Vergabe',
-    'grundwasser':             'Grundwasser',
-    'beratung':                'Beratung',
-    'reality-capture':         'Reality Capture',
-    '3d-vermessung':           '3D-Vermessung',
-    'baustellendokumentation': 'Baustellendokumentation',
-    'inspektionen':            'Inspektionen',
-    'digitale-zwillinge':      'Digitale Zwillinge',
-    'thermografie':            'Thermografie',
-    'multispektral':           'Multispektral',
-    'video-film':              'Video & Film',
-    'technologie':             'Technologie',
-    'ueber-uns':               'Über uns',
-    'referenzen':              'Referenzen',
-    'kontakt':                 'Kontakt',
-    'impressum':               'Impressum',
-    'datenschutz':             'Datenschutz',
-}
-
-# Breadcrumb parent map. Top-level routes are absent (parent == home).
-ROUTE_PARENT = {
-    'bauueberwachung':         'geotechnik',
-    'vergabe':                 'geotechnik',
-    'grundwasser':             'geotechnik',
-    'beratung':                'geotechnik',
-    '3d-vermessung':           'reality-capture',
-    'baustellendokumentation': 'reality-capture',
-    'inspektionen':            'reality-capture',
-    'digitale-zwillinge':      'reality-capture',
-    'thermografie':            'reality-capture',
-    'multispektral':           'reality-capture',
-    'video-film':              'reality-capture',
-}
-
-# Routes that get a single Service node.
-SERVICE_PAGES = {
-    'bauueberwachung', 'vergabe', 'grundwasser', 'beratung',
-    '3d-vermessung', 'baustellendokumentation', 'inspektionen',
-    'digitale-zwillinge', 'thermografie', 'multispektral', 'video-film',
-}
-HUB_PAGES    = {'', 'geotechnik', 'reality-capture'}  # get the ItemList catalog
-FAQ_PAGES    = {''}                                     # FAQPage only on home
-REVIEW_PAGES = {'', 'referenzen'}                       # AggregateRating block
-NO_IMAGE_PAGES = {'impressum', 'datenschutz'}           # skip primaryImageOfPage
-
-
-def canonical_for(slug: str) -> str:
-    # Mirrors prerender_one's canonical rule: home has a trailing slash,
-    # sub-routes do not (matches sitemap.xml convention).
-    return SITE_URL + '/' + slug if slug else SITE_URL + '/'
-
-
-def extract_jsonld_templates(html: str) -> dict:
-    """Parse the existing global JSON-LD blocks out of the source so we can
-    recombine them per route. Source stays the single source of truth."""
-    raw_blocks = re.findall(
-        r'<script type="application/ld\+json">(.*?)</script>', html, re.DOTALL)
-    tpl = {'service_by_slug': {}}
-    for raw in raw_blocks:
-        try:
-            obj = json.loads(raw)
-        except json.JSONDecodeError as e:
-            raise SystemExit(f'Existing JSON-LD failed to parse: {e}\n---\n{raw[:200]}')
-        t = obj.get('@type')
-        bid = obj.get('@id', '')
-        if isinstance(t, list):
-            if 'LocalBusiness' in t or 'ProfessionalService' in t:
-                tpl['organization'] = obj
-        elif t == 'Person':
-            tpl['person'] = obj
-        elif t == 'FAQPage':
-            tpl['faq'] = obj
-        elif t == 'Organization' and 'reviews' in bid:
-            tpl['reviews'] = obj
-        elif t == 'ItemList':
-            tpl['services_itemlist'] = obj
-            for el in obj.get('itemListElement', []):
-                item = el.get('item', {})
-                url = item.get('url', '')
-                s = url.rstrip('/').rsplit('/', 1)[-1] if url else ''
-                if s:
-                    tpl['service_by_slug'][s] = item
-        # BreadcrumbList in source is ignored — we regenerate per route.
-    for req in ('organization', 'person'):
-        if req not in tpl:
-            raise SystemExit(f'Required JSON-LD template "{req}" not found in source')
-    return tpl
-
-
-def breadcrumb_chain(slug: str) -> list:
-    """Return list of slugs from home -> self, e.g.
-    'thermografie' -> ['', 'reality-capture', 'thermografie']."""
-    chain = []
-    cur = slug
-    while cur != '':
-        chain.append(cur)
-        cur = ROUTE_PARENT.get(cur, '')
-    chain.append('')          # home root
-    chain.reverse()
-    return chain
-
-
-def website_node() -> dict:
-    return {
-        "@type": "WebSite",
-        "@id": SITE_URL + "/#website",
-        "url": SITE_URL + "/",
-        "name": "Octacon Geotechnik GmbH",
-        "inLanguage": "de-DE",
-        "publisher": {"@id": SITE_URL + "/#organization"},
-    }
-
-
-def webpage_node(slug: str, canonical: str, name: str, desc: str) -> dict:
-    if slug == 'kontakt':
-        wp_type = ["WebPage", "ContactPage"]
-    elif slug == 'ueber-uns':
-        wp_type = ["WebPage", "AboutPage"]
-    else:
-        wp_type = "WebPage"
-    node = {
-        "@type": wp_type,
-        "@id": canonical + "#webpage",
-        "url": canonical,
-        "name": name,
-        "description": desc,
-        "inLanguage": "de-DE",
-        "isPartOf": {"@id": SITE_URL + "/#website"},
-        "about": {"@id": SITE_URL + "/#organization"},
-        "breadcrumb": {"@id": canonical + "#breadcrumb"},
-    }
-    if slug not in NO_IMAGE_PAGES:
-        node["primaryImageOfPage"] = {
-            "@type": "ImageObject",
-            "url": SITE_URL + "/og-image-1200x630.jpg",
-        }
-    return node
-
-
-def breadcrumb_node(slug: str, canonical: str) -> dict:
-    items = []
-    for i, s in enumerate(breadcrumb_chain(slug), start=1):
-        items.append({
-            "@type": "ListItem",
-            "position": i,
-            "name": ROUTE_NAMES[s],
-            "item": canonical_for(s),
-        })
-    return {
-        "@type": "BreadcrumbList",
-        "@id": canonical + "#breadcrumb",
-        "itemListElement": items,
-    }
-
-
-def service_node(slug: str, templates: dict) -> dict:
-    base = templates['service_by_slug'].get(slug)
-    if not base:
-        return None
-    node = dict(base)
-    node['serviceType'] = ROUTE_NAMES[slug]            # German serviceType
-    node['provider'] = {"@id": SITE_URL + "/#organization"}
-    node['areaServed'] = [
-        {"@type": "City", "name": "Berlin"},
-        {"@type": "AdministrativeArea", "name": "Brandenburg"},
-        {"@type": "Country", "name": "Deutschland"},
-    ]
-    return node
-
-
-def build_jsonld(slug: str, page_id: str, meta: dict, templates: dict) -> list:
-    """Return the ordered list of JSON-LD nodes for one route."""
-    canonical = canonical_for(slug)
-    info = meta.get(page_id, meta['home'])
-    name = html_unescape(info['de_t'])
-    desc = html_unescape(info['de_d'])
-
-    nodes = []
-    # TIER 1 — global
-    nodes.append(templates['organization'])
-    nodes.append(templates['person'])
-    nodes.append(website_node())
-    # TIER 2 — per-route
-    nodes.append(webpage_node(slug, canonical, name, desc))
-    nodes.append(breadcrumb_node(slug, canonical))
-    # TIER 3 — conditional
-    if slug in FAQ_PAGES and 'faq' in templates:
-        nodes.append(templates['faq'])
-    if slug in REVIEW_PAGES and 'reviews' in templates:
-        nodes.append(templates['reviews'])
-    if slug in HUB_PAGES and 'services_itemlist' in templates:
-        nodes.append(templates['services_itemlist'])
-    if slug in SERVICE_PAGES:
-        svc = service_node(slug, templates)
-        if svc:
-            nodes.append(svc)
-    return nodes
-
-
-def _ld_script(obj: dict) -> str:
-    txt = json.dumps(obj, ensure_ascii=False, indent=2)
-    txt = txt.replace('<', '\\u003c')   # XSS-safe: never allow a literal </script>
-    return '<script type="application/ld+json">\n' + txt + '\n</script>\n'
-
-
-def render_jsonld_scripts(nodes: list) -> str:
-    """>=4 nodes -> one @graph block; otherwise separate blocks (both valid)."""
-    clean = []
-    for n in nodes:
-        c = dict(n)
-        c.pop('@context', None)
-        clean.append(c)
-    if len(clean) >= 4:
-        return _ld_script({"@context": "https://schema.org", "@graph": clean})
-    return ''.join(
-        _ld_script({"@context": "https://schema.org", **c}) for c in clean)
-
-
-# Strips an existing ld+json <script> plus an optional immediately-preceding
-# HTML comment (the authored descriptions sit right above each block).
-LD_JSON_BLOCK_RE = re.compile(
-    r'(?:[ \t]*<!--.*?-->\s*)?'
-    r'[ \t]*<script type="application/ld\+json">.*?</script>\n?',
-    re.DOTALL)
-
-
-def validate_dist(out_path: Path) -> None:
-    """Local structural validation of every emitted route's JSON-LD:
-    JSON well-formedness, dangling @id references, node inventory."""
-    print('\nValidating per-route JSON-LD (local structural check)...')
-    rows = []
-    for html_file in sorted(out_path.rglob('index.html')):
-        rel = html_file.parent.relative_to(out_path)
-        route = '/' if str(rel) == '.' else '/' + str(rel) + '/'
-        txt = html_file.read_text(encoding='utf-8')
-        blocks = re.findall(
-            r'<script type="application/ld\+json">(.*?)</script>', txt, re.DOTALL)
-        nodes, warnings = [], []
-        for raw in blocks:
-            try:
-                obj = json.loads(raw.replace('\\u003c', '<'))
-            except json.JSONDecodeError as e:
-                warnings.append(f'invalid JSON: {e}')
-                continue
-            nodes.extend(obj['@graph'] if '@graph' in obj else [obj])
-
-        defined, referenced = set(), set()
-        def walk(o):
-            if isinstance(o, dict):
-                if list(o.keys()) == ['@id']:
-                    referenced.add(o['@id'])
-                elif '@id' in o:
-                    defined.add(o['@id'])
-                for v in o.values():
-                    walk(v)
-            elif isinstance(o, list):
-                for v in o:
-                    walk(v)
-        for n in nodes:
-            walk(n)
-        for d in sorted(referenced - defined):
-            warnings.append(f'dangling @id ref: {d}')
-
-        types = []
-        for n in nodes:
-            t = n.get('@type')
-            types.append('+'.join(t) if isinstance(t, list) else (t or '?'))
-        rows.append((route, len(nodes), types, warnings))
-
-    print(f'  {"route":<26}{"nodes":>6}  {"status":<7} types')
-    for route, n, types, warns in rows:
-        status = 'OK' if not warns else f'{len(warns)} warn'
-        print(f'  {route:<26}{n:>6}  {status:<7} {", ".join(types)}')
-        for w in warns:
-            print(f'      ! {w}')
-    total = sum(len(w) for *_, w in rows)
-    print(f'  -> {len(rows)} routes validated, {total} warning(s)')
-
-
 def extract_meta_map(html: str) -> dict:
     """Pull the per-page META object out of OCGT_website.html so we can
     bake the right title/description into each prerendered file."""
@@ -379,8 +90,7 @@ def html_escape(s: str) -> str:
              .replace('>', '&gt;'))
 
 
-def prerender_one(html: str, page_id: str, slug: str, meta: dict,
-                  jsonld_templates: dict) -> str:
+def prerender_one(html: str, page_id: str, slug: str, meta: dict) -> str:
     """Return a copy of html with the requested page set as active and
     its title / description / canonical baked in."""
     info = meta.get(page_id, meta['home'])
@@ -432,17 +142,6 @@ def prerender_one(html: str, page_id: str, slug: str, meta: dict,
         r'<meta name="twitter:description" content="[^"]*">',
         f'<meta name="twitter:description" content="{desc}">',
         html, count=1)
-
-    # 6b) Replace the global JSON-LD blocks with this route's tailored set.
-    #     Strip all existing ld+json (+ their authored comments), then inject
-    #     the per-route graph at the location of the first removed block.
-    matches = list(LD_JSON_BLOCK_RE.finditer(html))
-    if matches:
-        insert_pos = matches[0].start()
-        stripped = LD_JSON_BLOCK_RE.sub('', html)
-        nodes = build_jsonld(slug, page_id, meta, jsonld_templates)
-        block = render_jsonld_scripts(nodes)
-        html = stripped[:insert_pos] + block + stripped[insert_pos:]
 
     # 7) Mark the target page as active (.on) so it's visible without JS.
     #    First strip any existing .on class from `<div id="p-*" class="page on">`
@@ -570,14 +269,10 @@ def main():
     html = src_path.read_text(encoding='utf-8')
     meta = extract_meta_map(html)
     print(f'Loaded {len(meta)} META entries\n')
-    jsonld_templates = extract_jsonld_templates(html)
-    print(f'Loaded JSON-LD templates: '
-          f'{", ".join(k for k in jsonld_templates if k != "service_by_slug")} '
-          f'+ {len(jsonld_templates["service_by_slug"])} services\n')
 
     # Generate one HTML file per route
     for slug, page_id in ROUTES.items():
-        rendered = prerender_one(html, page_id, slug, meta, jsonld_templates)
+        rendered = prerender_one(html, page_id, slug, meta)
         if slug == '':
             target = out_path / 'index.html'
         else:
@@ -1057,7 +752,6 @@ def main():
             print('  ✓ .htaccess (deployment-tuned)')
 
     print(f'\nDone. {len(ROUTES)} prerendered routes written to {out_path.name}/')
-    validate_dist(out_path)
     print(f'Deploy by uploading the contents of {out_path.name}/ to the web root.')
 
 
