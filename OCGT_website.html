@@ -10195,7 +10195,7 @@ body:has(#p-home.on) #consult-float { display:none !important; }
    and other service pages. -- */
 @media (max-width:560px) {
   div[style*="repeat(4,1fr)"][style*=".75rem"] { grid-template-columns:repeat(2,1fr) !important; }
-  div[style*="repeat(3,1fr)"][style*=".75rem"] { grid-template-columns:repeat(2,1fr) !important; }
+  div[style*="repeat(3,1fr)"][style*=".75rem"] { grid-template-columns:1fr !important; }
   /* Comparison cards (red "without" / green "with" two-column layout):
      stack vertically on mobile so each side gets full width and the bullet
      items don't wrap word-by-word. */
@@ -16330,13 +16330,6 @@ img, video, iframe, canvas, svg { max-width:100%; }
         <div class="about-tl-desc de-only">UAV + LiDAR · EU A1/A2/A3/STS zertifiziert · erste 3DGS-Projekte.</div>
         <div class="about-tl-desc en-only">UAV + LiDAR · EU A1/A2/A3/STS certified · first 3DGS projects.</div>
       </div>
-      <div class="about-tl-step">
-        <div class="about-tl-year">2023</div>
-        <div class="about-tl-title de-only">Staatsoper Mandat</div>
-        <div class="about-tl-title en-only">Staatsoper mandate</div>
-        <div class="about-tl-desc de-only">Bauüberwachung Staatsoper Unter den Linden · Trogbaugrube.</div>
-        <div class="about-tl-desc en-only">Supervision Staatsoper Unter den Linden · trough excavation.</div>
-      </div>
       <div class="about-tl-step is-current">
         <div class="about-tl-year">2024+</div>
         <div class="about-tl-title de-only">Heute</div>
@@ -16674,7 +16667,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <div class="ref-card rv" data-cat="reality-capture scan" onclick="go('b1')" role="button" tabindex="0" style="transition-delay:.05s" aria-label="Sage Restaurant Sage Beach 3D-Laserscan">
         <div class="ref-thumb">
           <div class="img-ph" style="height:100%;border-radius:0;border:0;background:transparent">
-            <img src="marketing/IMG_20200911_151619_962_mix01.jpg" width="4579" height="4213" alt="Sage Restaurant Berlin 3D-Laserscan" loading="lazy">
+            <img src="marketing/Gasthaus-Figl-Dining-Room.jpg" width="599" height="337" alt="Sage Restaurant Berlin 3D-Laserscan 360° Tour" loading="lazy">
           </div>
           <div class="ref-type">LiDAR + 360° Tour</div>
         </div>
@@ -16829,7 +16822,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
           <p class="de-only">Erkunden Sie unsere photogrammetrische Erfassung direkt im Browser — volles 3D, Zoom &amp; Measure.</p>
           <p class="en-only">Explore our photogrammetric capture directly in the browser — full 3D, zoom and measure.</p>
           <div class="ref-meta">
-            <span><a href="https://cloud.pix4d.com/site/331527/dataset/2094917/model?shareToken=51b6c1ca-cb09-4152-abec-59d35c831cd5" target="_blank" rel="noopener noreferrer" style="color:var(--teal)" data-de="Im Vollbild öffnen →" data-en="Open fullscreen →">Im Vollbild →</a></span>
+            <span><a href="https://cloud.pix4d.com/site/537406/dataset/2647627/model?shareToken=a607531d-8246-49d9-a760-df60211b6b45" target="_blank" rel="noopener noreferrer" style="color:var(--teal)" data-de="Im Vollbild öffnen →" data-en="Open fullscreen →">Im Vollbild →</a></span>
             <span>Photogrammetrie</span>
           </div>
         </div>
@@ -16869,7 +16862,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2022 – 2023 -->
       <section class="refs-yrgroup rv" data-year="2022-2023">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl">2022 – 2023</span>
+          <span class="refs-yrhead-lbl">2022</span>
           <span class="refs-yrhead-count" data-de="9 Projekte" data-en="9 projects">9 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -16889,7 +16882,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2021 — peak Reality Capture year (default open) -->
       <section class="refs-yrgroup rv" data-year="2021">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="true">
-          <span class="refs-yrhead-lbl" data-de="2021 · Reality-Capture-Schwerpunktjahr" data-en="2021 · Peak Reality Capture year">2021 · Reality-Capture-Schwerpunktjahr</span>
+          <span class="refs-yrhead-lbl">2021</span>
           <span class="refs-yrhead-count" data-de="22 Projekte" data-en="22 projects">22 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">–</span>
         </button>
@@ -16957,7 +16950,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2018 — 3D-Photogrammetrie pipeline launch -->
       <section class="refs-yrgroup rv" data-year="2018">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl" data-de="2018 · Aufbau 3D-Photogrammetrie-Pipeline" data-en="2018 · 3D photogrammetry pipeline launch">2018 · Aufbau 3D-Photogrammetrie-Pipeline</span>
+          <span class="refs-yrhead-lbl">2018</span>
           <span class="refs-yrhead-count" data-de="1 Projekt" data-en="1 project">1 Projekt</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -16969,7 +16962,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2017 – 2018 -->
       <section class="refs-yrgroup rv" data-year="2017-2018">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl">2017 – 2018</span>
+          <span class="refs-yrhead-lbl">2017</span>
           <span class="refs-yrhead-count" data-de="8 Projekte" data-en="8 projects">8 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -16988,7 +16981,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2016 – 2018 -->
       <section class="refs-yrgroup rv" data-year="2016-2018">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl">2016 – 2018</span>
+          <span class="refs-yrhead-lbl">2016</span>
           <span class="refs-yrhead-count" data-de="8 Projekte" data-en="8 projects">8 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -17007,7 +17000,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2015 – 2020 -->
       <section class="refs-yrgroup rv" data-year="2015-2020">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl">2015 – 2020</span>
+          <span class="refs-yrhead-lbl">2015</span>
           <span class="refs-yrhead-count" data-de="6 Projekte" data-en="6 projects">6 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -17024,7 +17017,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2014 – 2015 -->
       <section class="refs-yrgroup rv" data-year="2014-2015">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl">2014 – 2015</span>
+          <span class="refs-yrhead-lbl">2014</span>
           <span class="refs-yrhead-count" data-de="7 Projekte" data-en="7 projects">7 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -17042,7 +17035,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2012 – 2014 -->
       <section class="refs-yrgroup rv" data-year="2012-2014">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl">2012 – 2014</span>
+          <span class="refs-yrhead-lbl">2012</span>
           <span class="refs-yrhead-count" data-de="3 Projekte" data-en="3 projects">3 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -17056,7 +17049,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
       <!-- 2008 – 2011 -->
       <section class="refs-yrgroup rv" data-year="2008-2011">
         <button type="button" class="refs-yrhead" onclick="refsToggleYear(this)" aria-expanded="false">
-          <span class="refs-yrhead-lbl">2008 – 2011</span>
+          <span class="refs-yrhead-lbl">2008</span>
           <span class="refs-yrhead-count" data-de="8 Projekte" data-en="8 projects">8 Projekte</span>
           <span class="refs-yrhead-icon" aria-hidden="true">+</span>
         </button>
@@ -17341,7 +17334,7 @@ img, video, iframe, canvas, svg { max-width:100%; }
           <h3 data-de="Interaktive 3D-Karte — Berlin (PIX4D)" data-en="Interactive 3D Map — Berlin (PIX4D)">Interaktive 3D-Karte — Berlin (PIX4D)</h3>
           <p class="de-only">Erkunden Sie unsere photogrammetrische Erfassung direkt im Browser — volles 3D, zoom &amp; measure.</p>
           <p class="en-only">Explore our photogrammetric capture directly in your browser — full 3D, zoom and measure.</p>
-          <div class="ref-meta"><span><a href="https://cloud.pix4d.com/site/331527/dataset/2094917/model?shareToken=51b6c1ca-cb09-4152-abec-59d35c831cd5" target="_blank" rel="noopener noreferrer" style="color:#2a9d8f" data-de="Im Vollbild öffnen →" data-en="Open fullscreen →">Im Vollbild →</a></span><span>Photogrammetrie</span></div>
+          <div class="ref-meta"><span><a href="https://cloud.pix4d.com/site/537406/dataset/2647627/model?shareToken=a607531d-8246-49d9-a760-df60211b6b45" target="_blank" rel="noopener noreferrer" style="color:#2a9d8f" data-de="Im Vollbild öffnen →" data-en="Open fullscreen →">Im Vollbild →</a></span><span>Photogrammetrie</span></div>
         </div>
       </div>
     </div>
