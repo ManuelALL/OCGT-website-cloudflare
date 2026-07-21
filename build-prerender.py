@@ -311,16 +311,32 @@ def prerender_one(html: str, page_id: str, slug: str, meta: dict) -> str:
         return opener + re.sub(r'<(/?)h1(\b)', r'<\1h2\2', body)
     html = PAGE_DIV_RE.sub(_demote_inactive, html)
 
-    # Also demote the global sr-only H1s outside the page sections when the
-    # active route isn't home (they describe the home page).
+    # Also demote the global sr-only H1s outside the page sections.
+    # The EN variant is always demoted — DE is the single authoritative H1
+    # site-wide, so shipping both as <h1> gives every prerendered page (most
+    # of all home, where nothing else demotes it) two H1s in the DOM.
+    html = re.sub(
+        r'(<h1 class="sr-only en-only"[^>]*>.*?)</h1>',
+        r'\1</h2>',
+        html, flags=re.DOTALL,
+    )
+    html = re.sub(
+        r'<h1(\s+class="sr-only en-only")',
+        r'<h2\1',
+        html,
+    )
+    # The DE sr-only H1 stays <h1> only on home (its sole H1, since home's
+    # own page section has no heading of its own); on every other route the
+    # page's own section already supplies the single real H1, so demote it
+    # there too to avoid a second one.
     if page_id != 'home':
         html = re.sub(
-            r'(<h1 class="sr-only[^"]*"[^>]*>.*?)</h1>',
+            r'(<h1 class="sr-only de-only"[^>]*>.*?)</h1>',
             r'\1</h2>',
             html, flags=re.DOTALL,
         )
         html = re.sub(
-            r'<h1(\s+class="sr-only)',
+            r'<h1(\s+class="sr-only de-only")',
             r'<h2\1',
             html,
         )
@@ -838,6 +854,8 @@ def main():
             "/company_logos/*\n"
             "  Cache-Control: public, max-age=31536000, immutable\n"
             "/04 Videos/*\n"
+            "  Cache-Control: public, max-age=31536000, immutable\n"
+            "/og-image*\n"
             "  Cache-Control: public, max-age=31536000, immutable\n"
             "\n"
             "/*.html\n"
