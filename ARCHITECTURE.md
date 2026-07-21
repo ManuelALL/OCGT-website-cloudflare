@@ -3,8 +3,8 @@
 ## Stack
 - **Static HTML** (no framework, no runtime build) — single source: `OCGT_website.html`
 - **Python prerender** → 20 SEO-optimized static pages in `dist/`
-- **Cloudflare Pages** for global edge delivery
-- **Cloudflare Pages Functions** for the contact form (`functions/api/contact.js` → Brevo API)
+- **Cloudflare Worker with Static Assets** (`worker/index.js` + `[assets]` binding in `wrangler.toml`) for global edge delivery
+- The same Worker handles the contact form (`POST /api/contact` → Brevo API). `functions/api/contact.js` is a legacy Cloudflare Pages Function kept for reference from an earlier Pages-based setup — the live path is `worker/index.js`.
 
 ## File map
 
@@ -12,8 +12,9 @@
 OCGT_website.html        Master SPA. Single source of truth for HTML/CSS/JS/META.
 build-prerender.py       Generates dist/ — one HTML per route, plus _headers,
                          _redirects, service worker registration, image lazy-loading.
-functions/api/contact.js Pages Function: receives form POST, sends via Brevo.
-wrangler.toml            Cloudflare Pages project config.
+worker/index.js          The live Worker: serves dist/ via [assets], handles POST /api/contact via Brevo.
+functions/api/contact.js Legacy Cloudflare Pages Function (kept for reference, not the live path).
+wrangler.toml            Cloudflare Worker (Static Assets) config — name, main, [assets] binding.
 manifest.webmanifest     PWA manifest (icons, theme color, install prompt).
 sitemap.xml / robots.txt SEO crawl hints.
 
@@ -44,13 +45,13 @@ Source: the `META = { ... }` object inside `OCGT_website.html`. Each entry has D
 ## Cloudflare deployment
 
 - `_headers` — security headers (HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy) + immutable cache for `/Images/*`, `/logos/*`, etc. + short cache for `*.html`.
-- `_redirects` — `www.ocgt.de` → `ocgt.de` (301), SPA fallback for unknown routes (200 → /index.html).
-- `functions/api/contact.js` — runs at the edge. Required env vars: `BREVO_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`.
+- No `_redirects` file — Workers Static Assets doesn't use it (`build-prerender.py` deletes any stale one from an earlier Pages build). `ocgt.de` (apex) → `www.ocgt.de` is a Cloudflare **Redirect Rule** (dashboard-only, not in this repo). Unknown paths get a real `404` via `wrangler.toml`'s `not_found_handling = "404-page"` + the generated `dist/404.html`.
+- `worker/index.js` — runs at the edge, serves `dist/` via the `[assets]` binding and handles `POST /api/contact`. Required env vars/secrets: `BREVO_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `CONTACT_FROM_NAME`, optionally `TURNSTILE_SECRET_KEY`.
 
 Deploy:
 ```bash
 python3 build-prerender.py
-wrangler pages deploy dist --project-name=ocgt-website
+wrangler deploy
 ```
 
 ## Performance optimizations (applied by build)
@@ -68,7 +69,7 @@ wrangler pages deploy dist --project-name=ocgt-website
 
 ```
 Browser → POST /api/contact (JSON)
-        → Cloudflare Pages Function
+        → Cloudflare Worker (worker/index.js)
         → Brevo Transactional Email API
         → info@ocgt.de inbox
 ```
@@ -98,8 +99,9 @@ Before deploying, always run `python3 build-prerender.py` to regenerate `dist/`.
 
 ## Future enhancements (in priority order)
 
-1. **Extract CSS/JS from monolithic HTML** → `assets/site.css`, `assets/site.js`. Drops each prerendered page from 1.1 MB to ~50 KB; CSS/JS cached once across all 20 pages.
-2. **Subset custom fonts** if any are added.
-3. **Per-route CSS splitting** — only ship the CSS each page needs.
-4. **Playwright smoke tests** — automated cross-browser regression catch.
-5. **Cloudflare Web Analytics** — privacy-friendly, no cookies, no GDPR banner needed.
+1. **Subset custom fonts** if any are added.
+2. **Per-route CSS splitting** — only ship the CSS each page needs.
+3. **Playwright smoke tests** — automated cross-browser regression catch.
+4. **Cloudflare Web Analytics** — privacy-friendly, no cookies, no GDPR banner needed.
+
+(CSS/JS extraction into `assets/site.*.css`/`.js` — content-hashed, cached once across all 20 pages — is already implemented in `build-prerender.py`.)
