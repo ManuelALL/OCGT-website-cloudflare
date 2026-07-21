@@ -11,7 +11,7 @@
  */
 
 const MAX_LEN = 2000;
-const DEFAULT_ORIGINS = ['https://ocgt.de', 'https://www.ocgt.de'];
+const DEFAULT_ORIGINS = ['https://www.ocgt.de', 'https://ocgt.de'];
 
 function allowedOrigins(env) {
   const extra = (env.APP_BASE_URL || '').trim().replace(/\/+$/, '');
@@ -33,18 +33,6 @@ export default {
         return handleContact(request, env);
       }
       return new Response('Method Not Allowed', { status: 405 });
-    }
-
-    // Internally rewrite extension-less paths missing a trailing slash so the
-    // assets binding serves the prerendered index.html directly — saves the
-    // 307 redirect roundtrip from `single-page-application` mode.
-    if (
-      !url.pathname.endsWith('/') &&
-      !url.pathname.includes('.') &&
-      request.method === 'GET'
-    ) {
-      url.pathname += '/';
-      return env.ASSETS.fetch(new Request(url, request));
     }
 
     return env.ASSETS.fetch(request);

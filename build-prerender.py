@@ -40,6 +40,10 @@ R2_DIRS       = ['Images', 'logos', 'icons', 'company_logos', 'marketing', 'Vide
 # Cloudflare's "always passes" test key if unset, so dev builds still render.
 TURNSTILE_SITE_KEY = os.environ.get('TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
 
+# Canonical site host. www is canonical (matches social-media links); apex
+# ocgt.de 301-redirects to this via a Cloudflare Redirect Rule (dashboard-only).
+SITE_ORIGIN = 'https://www.ocgt.de'
+
 ROUTES = {
     '':                        'home',
     'geotechnik':              'geotechnik',
@@ -62,6 +66,14 @@ ROUTES = {
     'impressum':               'impressum',
     'datenschutz':             'datenschutz',
 }
+ID_TO_SLUG = {page_id: slug for slug, page_id in ROUTES.items()}
+
+
+def route_url(slug: str) -> str:
+    """Canonical URL for a slug — trailing-slash form, since that's what the
+    Worker actually serves 200 for directly (see ARCHITECTURE.md notes on
+    html_handling). Home is the origin with a trailing slash."""
+    return f'{SITE_ORIGIN}/{slug}/' if slug else f'{SITE_ORIGIN}/'
 
 
 def extract_meta_map(html: str) -> dict:
@@ -90,13 +102,114 @@ def html_escape(s: str) -> str:
              .replace('>', '&gt;'))
 
 
+def json_escape(s: str) -> str:
+    return s.replace('\\', '\\\\').replace('"', '\\"')
+
+
+def find_section_bounds(text: str, start_idx: int) -> int:
+    """Walk forward from start_idx (pointing at <div id="p-...) counting
+    nested divs until depth hits 0. Returns the index just past the
+    matching </div>, or -1 if unbalanced."""
+    depth = 0
+    i = start_idx
+    n = len(text)
+    while i < n:
+        o = text.find('<div', i)
+        c = text.find('</div>', i)
+        if c == -1:
+            return -1
+        if o != -1 and o < c:
+            depth += 1
+            i = o + 4
+        else:
+            depth -= 1
+            i = c + 6
+            if depth == 0:
+                return i
+    return -1
+
+
+def extract_page_section(html: str, page_id: str) -> str:
+    """Return the full markup of <div id="p-{page_id}" class="page...">...</div>
+    from the (pre-stripping) source, or '' if not found."""
+    m = re.search(rf'<div id="p-{re.escape(page_id)}"\s+class="page[^"]*">', html)
+    if not m:
+        return ''
+    end = find_section_bounds(html, m.start())
+    if end == -1:
+        return ''
+    return html[m.start():end]
+
+
+def extract_breadcrumb_items(section_html: str, canonical: str) -> list:
+    """Parse a route's own visible `.breadcrumb` markup (already rendered on
+    every inner page — see OCGT_website.html) into BreadcrumbList items, so
+    the JSON-LD always matches what's actually on the page instead of a
+    hand-maintained list that can drift out of sync. Returns [] if the page
+    has no breadcrumb UI (e.g. home)."""
+    m = re.search(r'<div class="breadcrumb"[^>]*>(.*?)</div>', section_html, re.DOTALL)
+    if not m:
+        return []
+    spans = re.findall(r'<span\b([^>]*)>(.*?)</span>', m.group(1), re.DOTALL)
+    items = []
+    for attrs, content in spans:
+        if 'sep-arrow' in attrs:
+            continue
+        if 'en-only' in attrs and 'de-only' not in attrs:
+            continue  # skip the English sibling span; DE label is authoritative here
+        label = re.sub(r'<[^>]+>', '', content).strip()
+        if not label:
+            continue
+        onclick_m = re.search(r"onclick=\"go\('([a-z0-9-]+)'\)\"", attrs)
+        if onclick_m:
+            url = route_url(ID_TO_SLUG.get(onclick_m.group(1), ''))
+        elif label == 'Home':
+            url = route_url('')
+        else:
+            url = canonical  # unlinked last crumb = the current page
+        items.append({'name': label, 'item': url})
+    return items
+
+
+def breadcrumb_json_ld(items: list) -> str:
+    entries = ',\n    '.join(
+        '{{ "@type": "ListItem", "position": {}, "name": "{}", "item": "{}" }}'
+        .format(i + 1, json_escape(it['name']), it['item'])
+        for i, it in enumerate(items)
+    )
+    return (
+        '<script type="application/ld+json">\n'
+        '{\n'
+        '  "@context": "https://schema.org",\n'
+        '  "@type": "BreadcrumbList",\n'
+        '  "itemListElement": [\n'
+        f'    {entries}\n'
+        '  ]\n'
+        '}\n'
+        '</script>'
+    )
+
+
+LDJSON_BLOCK_RE = re.compile(r'<script type="application/ld\+json">.*?</script>\n?', re.DOTALL)
+
+
+def replace_ld_block(html: str, type_name: str, replacement) -> str:
+    """Find the <script application/ld+json> block whose @type is type_name
+    and replace it via replacement(matched_text) -> new_text (return '' to
+    remove it). Leaves all other JSON-LD blocks untouched."""
+    marker = f'"@type": "{type_name}"'
+    def repl(m):
+        return replacement(m.group(0)) if marker in m.group(0) else m.group(0)
+    return LDJSON_BLOCK_RE.sub(repl, html)
+
+
 def prerender_one(html: str, page_id: str, slug: str, meta: dict) -> str:
     """Return a copy of html with the requested page set as active and
     its title / description / canonical baked in."""
     info = meta.get(page_id, meta['home'])
     title = info['de_t']
     desc = html_escape(info['de_d'])
-    canonical = 'https://ocgt.de/' + slug if slug else 'https://ocgt.de/'
+    canonical = route_url(slug)
 
     # 1) replace <title>
     html = re.sub(
@@ -115,6 +228,15 @@ def prerender_one(html: str, page_id: str, slug: str, meta: dict) -> str:
         r'<link rel="canonical" href="[^"]*">',
         f'<link rel="canonical" href="{canonical}">',
         html, count=1)
+
+    # 3b) replace hreflang alternates — self-referencing per route. Both DE
+    # and EN content ship at the same URL (client-side toggle), so all three
+    # (de/en/x-default) point at this route's own canonical, matching it
+    # instead of always pointing at the homepage.
+    html = re.sub(
+        r'<link rel="alternate" hreflang="(?:de|en|x-default)" href="[^"]*">',
+        lambda m: re.sub(r'href="[^"]*"', f'href="{canonical}"', m.group(0)),
+        html)
 
     # 4) replace og:url
     html = re.sub(
@@ -142,6 +264,24 @@ def prerender_one(html: str, page_id: str, slug: str, meta: dict) -> str:
         r'<meta name="twitter:description" content="[^"]*">',
         f'<meta name="twitter:description" content="{desc}">',
         html, count=1)
+
+    # 6b) FAQPage structured data: the full 11-question FAQ only appears
+    # verbatim on the home page. Shipping it unchanged on every route would
+    # be schema that doesn't match the page's visible content, so strip it
+    # everywhere except home.
+    if page_id != 'home':
+        html = replace_ld_block(html, 'FAQPage', lambda _: '')
+
+    # 6c) BreadcrumbList: build from THIS route's own visible .breadcrumb
+    # markup (still present in `html` at this point — body content isn't
+    # touched until the stripping pass below) instead of a static, identical
+    # 3-item list on every page. Home has no breadcrumb UI, so it gets none.
+    section_html = extract_page_section(html, page_id)
+    breadcrumb_items = extract_breadcrumb_items(section_html, canonical)
+    if breadcrumb_items:
+        html = replace_ld_block(html, 'BreadcrumbList', lambda _: breadcrumb_json_ld(breadcrumb_items))
+    else:
+        html = replace_ld_block(html, 'BreadcrumbList', lambda _: '')
 
     # 7) Mark the target page as active (.on) so it's visible without JS.
     #    First strip any existing .on class from `<div id="p-*" class="page on">`
@@ -191,31 +331,6 @@ def prerender_one(html: str, page_id: str, slug: str, meta: dict) -> str:
     #    Inactive sections are replaced with a stub <div id="p-X" class="page"
     #    data-route-stub> so the client router can detect them and lazy-fetch
     #    the full content when the user navigates.
-    DIV_OPEN = re.compile(r'<div')
-    DIV_CLOSE = re.compile(r'</div>')
-
-    def find_section_bounds(text, start_idx):
-        """Walk forward from start_idx (pointing at <div id="p-...) counting
-        nested divs until depth hits 0. Returns the index just past the
-        matching </div>."""
-        depth = 0
-        i = start_idx
-        n = len(text)
-        while i < n:
-            o = text.find('<div', i)
-            c = text.find('</div>', i)
-            if c == -1:
-                return -1
-            if o != -1 and o < c:
-                depth += 1
-                i = o + 4
-            else:
-                depth -= 1
-                i = c + 6
-                if depth == 0:
-                    return i
-        return -1
-
     PAGE_OPEN_RE = re.compile(r'<div id="p-([a-z0-9-]+)"\s+class="page[^"]*">')
     out_parts = []
     cursor = 0
@@ -359,6 +474,36 @@ def main():
 
     CSS_LINK = f'<link rel="stylesheet" href="/assets/{css_name}">'
     JS_TAG   = f'<script src="/assets/{js_name}" defer></script>'
+
+    # ── 404.html — required by wrangler.toml's `not_found_handling =
+    # "404-page"` so genuinely unknown paths get a real HTTP 404 instead of
+    # the SPA-fallback soft-404 (every URL serving the homepage with a 200).
+    # noindex since it's not a real page; links back to the real homepage.
+    # Inline `style="..."` only (no <style> block) so this file passes
+    # through the CSS-extraction pass below unmodified — that pass looks
+    # for <style> tags to strip, which would otherwise eat page-local CSS.
+    not_found_html = f'''<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 – Seite nicht gefunden / Page not found | Octacon Geotechnik GmbH</title>
+<meta name="robots" content="noindex,follow">
+{CSS_LINK}
+</head>
+<body>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem">
+  <div>
+    <p style="font-size:4rem;font-weight:700;color:var(--mint,#5DEF95);margin:0 0 .5rem">404</p>
+    <p style="margin:.25rem 0">Diese Seite existiert nicht. <a href="/" style="color:var(--mint,#5DEF95);text-decoration:underline">Zurück zur Startseite</a></p>
+    <p style="margin:.25rem 0">This page doesn't exist. <a href="/" style="color:var(--mint,#5DEF95);text-decoration:underline">Back to homepage</a></p>
+  </div>
+</div>
+</body>
+</html>
+'''
+    (out_path / '404.html').write_text(not_found_html, encoding='utf-8')
+    print('  ✓ 404.html (required by not_found_handling = "404-page")')
 
     def rewrite_html_for_external_assets(text: str) -> str:
         # Strip every extracted <style>; replace the first one with the link.

@@ -18,8 +18,8 @@
 
 const MAX_LEN = 2000;
 const ALLOWED_ORIGINS = [
-  'https://ocgt.de',
   'https://www.ocgt.de',
+  'https://ocgt.de',
 ];
 
 function sanitize(v) {
